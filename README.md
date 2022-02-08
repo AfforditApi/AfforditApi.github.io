@@ -10,8 +10,8 @@ Contains source for the Affordit Loan Insights Portal static API docs.
 Pre-reqs, download [ruby version 2.6.8-1](https://rubyinstaller.org/downloads/). Specified version is important because there's an [issue](https://github.com/slatedocs/slate/issues/1438) on Windows with later versions.
 
 1. Download the swagger definition json from the Loan Insights Portal (Swashbuckle page)
-2. Pipe this through widdershins (https://github.com/Mermade/widdershins#options). You can find the `widdershins_env.json` in the tools folder.
-	> widdershins --environment widdershins_env.json swagger_def.json -o index.html.md
+2. Pipe the following through widdershins (https://github.com/Mermade/widdershins#options). You can find the `widdershins_env.json` in the tools folder.
+   - `> widdershins --environment widdershins_env.json swagger_def.json -o index.html.md`
 3. Now we're in the slate domain (https://github.com/slatedocs/slate)
    - following guide, fork slate repo (This step is already done and exists as a project within this organization https://github.com/AfforditApi/slate) So rather 
    - `> cd slate`
