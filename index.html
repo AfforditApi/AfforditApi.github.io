@@ -412,6 +412,35 @@
                   </li>
               </ul>
           </li>
+          <li>
+            <a href="#banking-meta-language-specification" class="toc-h1 toc-link" data-title="Banking Meta Language Specification">Banking Meta Language Specification</a>
+              <ul class="toc-list-h2">
+                  <li>
+                    <a href="#1-introduction" class="toc-h2 toc-link" data-title="1 Introduction">1 Introduction</a>
+                  </li>
+                  <li>
+                    <a href="#2-execution-flow" class="toc-h2 toc-link" data-title="2 Execution Flow">2 Execution Flow</a>
+                  </li>
+                  <li>
+                    <a href="#3-lexical-analysis" class="toc-h2 toc-link" data-title="3 Lexical Analysis">3 Lexical Analysis</a>
+                  </li>
+                  <li>
+                    <a href="#4-expressions" class="toc-h2 toc-link" data-title="4 Expressions">4 Expressions</a>
+                  </li>
+                  <li>
+                    <a href="#5-declarations" class="toc-h2 toc-link" data-title="5 Declarations">5 Declarations</a>
+                  </li>
+                  <li>
+                    <a href="#6-semantic-analysis" class="toc-h2 toc-link" data-title="6 Semantic Analysis">6 Semantic Analysis</a>
+                  </li>
+                  <li>
+                    <a href="#7-syntactic-grammar-ebnf" class="toc-h2 toc-link" data-title="7 Syntactic Grammar (EBNF)">7 Syntactic Grammar (EBNF)</a>
+                  </li>
+                  <li>
+                    <a href="#8-resources" class="toc-h2 toc-link" data-title="8 Resources">8 Resources</a>
+                  </li>
+              </ul>
+          </li>
       </ul>
     </div>
     <div class="page-wrapper">
@@ -5104,6 +5133,632 @@ Bearer
 <td>Represents the length in feet of the watercraft.</td>
 </tr>
 </tbody></table>
+
+<p><h1 id='banking-meta-language-specification'>Banking Meta Language Specification</h1><h2 id='1-introduction'>1 Introduction</h2>
+<p>The Banking Meta Language is a functional, non-Turing complete, strongly typed language used to represent a financial institution’s product catalog which includes dynamic rate adjustments and explicit loan denial.</p></p>
+
+<p>Once Banking Meta Language source code has been parsed and been determined to be valid it must be executed. We leverage existing tools in the .NET ecosystem, for example the System.Linq.Expressions namespace to translate our parsed expressions into .NET domain expressions which can then be compiled and executed all at run time. This provides us with multiple benefits. the largest being we can leverage the existing C# compiler to do all the dirty low-level work for us.</p>
+
+<p>An example of some Banking Meta Language code, hopefully it&#39;s easy to grok.</p>
+
+<div class="highlight"><pre class="highlight plaintext"><code>fun LoanAmount =&gt;
+  table CreditScore
+  | in (720, 850] =&gt; 75000
+  | in (640, 720] =&gt; 40000
+  | in (0, 640) =&gt; 28000
+  _ =&gt; 0
+
+rule deny "Reject this loan if credit score is negative!" =&gt;
+  CreditScore &lt; 0
+
+rule deny "Only those with great credit can borrow 100K+" =&gt;
+  CreditScore &lt; 800 and LoanAmount &gt;= 100000
+</code></pre></div>
+
+<p>The lexical and syntactic grammars make use of regular expressions to concisely convey themselves. In the following table <code>A</code> and <code>B</code> are representations of patterns.</p>
+
+<table><thead>
+<tr>
+<th>Notation</th>
+<th>Meaning</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>(A)</td>
+<td>A is treated as unit and may be combined with anything below</td>
+</tr>
+<tr>
+<td>A+</td>
+<td>Matches one or more occurrences of A</td>
+</tr>
+<tr>
+<td>A*</td>
+<td>Matches zero or more occurrences of A</td>
+</tr>
+<tr>
+<td>A?</td>
+<td>Matches A or nothing, treating A as optional</td>
+</tr>
+<tr>
+<td>A B</td>
+<td>Matches A and then B</td>
+</tr>
+<tr>
+<td>A \</td>
+<td>B</td>
+</tr>
+<tr>
+<td>[ char - char ]</td>
+<td>Range of ASCII characters</td>
+</tr>
+<tr>
+<td>[ ^ char - char ]</td>
+<td>Any characters except those in the range</td>
+</tr>
+</tbody></table>
+
+<h2 id='2-execution-flow'>2 Execution Flow</h2><div class="highlight"><pre class="highlight plaintext"><code>+-------------+     +-----------+     +----------+     +--------------+     +------------+
+|             |     |           |     |          |     | Expression   |     |            |
+| Source code |----&gt;| Lexer     |----&gt;| Parser   |----&gt;| Translation  |----&gt;| .NET JIT   |
+|             |     |           |     |          |     | Layer        |     |            |
++-------------+     +-----------+     +----------+     +--------------+     +------------+
+</code></pre></div>
+<p>Source code is fed into the lexer which takes a stream of characters and converts meaningful sequence of characters into tokens. This list of ordered tokens is then passed into the Parser which when given a valid sequence of tokens produces a corresponding syntax tree. From here the syntax tree is translated into .NET specific expressions which can then be evaluated by the .NET JIT.</p>
+<h2 id='3-lexical-analysis'>3 Lexical Analysis</h2>
+
+<p>Lexical analysis converts an input stream of Unicode characters into a stream of tokens by iteratively processing the stream. If more than one token can match a sequence of characters in the source file, lexical processing always forms the longest possible lexical element. What this means practically is that if we have the sequence of characters &#39;!=&#39;, this could match both the unary not &#39;!&#39; and &#39;!=&#39; binary not equals, so the lexer would chose the longer and the character sequence would be tokenized as not equals.</p>
+
+<h3 id='3-1-ignored-character-sequences'>3.1 Ignored Character Sequences</h3>
+
+<p>In Banking Meta Language white space, new line characters whether these come in the form of carriage return or line break, and the tab character are all ignored. The exception to this is when these character sequences are found in a string, in that case they will be consumed as part of the string.</p>
+
+<table><thead>
+<tr>
+<th>Character Sequence</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>&#39; &#39;, &#39;\r&#39;, &#39;\t&#39;, &#39;\n&#39;</td>
+</tr>
+</tbody></table>
+
+<h3 id='3-2-comments'>3.2 Comments</h3>
+
+<p>Banking Meta Language supports simple comments of the form &#39;//&#39;. The lexer when encountering this sequence of characters will consume all the tokens until the next line is reached, ignoring the comment.</p>
+
+<h3 id='3-3-keywords'>3.3 Keywords</h3>
+
+<table><thead>
+<tr>
+<th>Token Type</th>
+<th>Character Sequence</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>And</td>
+<td>and</td>
+</tr>
+<tr>
+<td>Or</td>
+<td>or</td>
+</tr>
+<tr>
+<td>True</td>
+<td>true</td>
+</tr>
+<tr>
+<td>False</td>
+<td>false</td>
+</tr>
+<tr>
+<td>Function</td>
+<td>fun</td>
+</tr>
+<tr>
+<td>Rule</td>
+<td>rule</td>
+</tr>
+<tr>
+<td>Table</td>
+<td>table</td>
+</tr>
+<tr>
+<td>Deny</td>
+<td>deny</td>
+</tr>
+<tr>
+<td>Adjust</td>
+<td>adjust</td>
+</tr>
+<tr>
+<td>In</td>
+<td>in</td>
+</tr>
+<tr>
+<td>Out</td>
+<td>out</td>
+</tr>
+</tbody></table>
+
+<h3 id='3-4-single-character-tokens'>3.4 Single Character Tokens</h3>
+
+<table><thead>
+<tr>
+<th>Token Type</th>
+<th>Character Sequence</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>LeftParen</td>
+<td>(</td>
+</tr>
+<tr>
+<td>RightParen</td>
+<td>)</td>
+</tr>
+<tr>
+<td>LeftBracket</td>
+<td>[</td>
+</tr>
+<tr>
+<td>RightBracket</td>
+<td>]</td>
+</tr>
+<tr>
+<td>Slash</td>
+<td>/</td>
+</tr>
+<tr>
+<td>Star</td>
+<td>*</td>
+</tr>
+<tr>
+<td>Minus</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Plus</td>
+<td>+</td>
+</tr>
+<tr>
+<td>Pipe</td>
+<td>\</td>
+</tr>
+<tr>
+<td>Comma</td>
+<td>,</td>
+</tr>
+<tr>
+<td>LeftBrace</td>
+<td>{</td>
+</tr>
+<tr>
+<td>RightBrace</td>
+<td>}</td>
+</tr>
+<tr>
+<td>Question</td>
+<td>?</td>
+</tr>
+<tr>
+<td>Colon</td>
+<td>:</td>
+</tr>
+<tr>
+<td>Discard</td>
+<td>_</td>
+</tr>
+</tbody></table>
+
+<h3 id='3-5-one-or-two-character-tokens'>3.5 One or Two Character Tokens</h3>
+
+<table><thead>
+<tr>
+<th>Token Type</th>
+<th>Character Sequence</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>Bang</td>
+<td>!</td>
+</tr>
+<tr>
+<td>BangEqual</td>
+<td>!=</td>
+</tr>
+<tr>
+<td>Lambda</td>
+<td>=&gt;</td>
+</tr>
+<tr>
+<td>EqualEqual</td>
+<td>==</td>
+</tr>
+<tr>
+<td>Greater</td>
+<td>&gt;</td>
+</tr>
+<tr>
+<td>GreaterEqual</td>
+<td>&gt;=</td>
+</tr>
+<tr>
+<td>Less</td>
+<td>&lt;</td>
+</tr>
+<tr>
+<td>LessEqual</td>
+<td>&lt;=</td>
+</tr>
+</tbody></table>
+
+<h3 id='3-6-literals'>3.6 Literals</h3>
+
+<table><thead>
+<tr>
+<th>Token Type</th>
+<th>Character Sequence</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>Identifier</td>
+<td>Any sequence of alpha numeric characters which start with an alpha character including underscore &#39;_&#39; and which does match a defined keyword.</td>
+</tr>
+<tr>
+<td>String</td>
+<td>&#39;&quot;&#39; &#39;<any character except ">&#39;* &#39;&quot;&#39;</td>
+</tr>
+<tr>
+<td>Integer</td>
+<td>[0-9]+</td>
+</tr>
+<tr>
+<td>FloatingPoint</td>
+<td>[0-9]+ &#39;.&#39; [0-9]+</td>
+</tr>
+</tbody></table>
+
+<p>Strings are allowed to be multi line. The scanner when consuming a string will consume any character until it reaches a terminating double quote character, &#39;&quot;&#39;. There is currently not support for escaping the double quote.</p>
+
+<h3 id='3-7-special-tokens'>3.7 Special Tokens</h3>
+
+<table><thead>
+<tr>
+<th>Token Type</th>
+<th>Character Sequence</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>Eof</td>
+<td>Special token indicating that the end of the character stream has been reached.</td>
+</tr>
+</tbody></table>
+
+<h3 id='3-8-domain-keywords'>3.8 Domain Keywords</h3>
+
+<p>Domain keywords are a special type of keyword which when used as an expression signal to the expression translation layer that a substitution with a domain object property is required here. Domain keywords when used as the identifier in a function signal to the expression translation layer that the function will return a value for that domain property. </p>
+
+<p>As an example, <code>fun LoanAmount =&gt; ...</code> says this function defines a product loan amount, while <code>table CreditScore ...</code> says use the domain object credit score property value as the table tuple expression. More specific behavior regarding domain keywords and functions can be found in the function expression section.</p>
+
+<p><div class="highlight"><pre class="highlight plaintext"><code>domain keywords
+  ::= &#39;CreditScore&#39;                  | &#39;LoanAmount&#39;                   | &#39;LoanTerm&#39;<br>
+    | &#39;InterestRate&#39;                 | &#39;LoanToValuePercent&#39;           | &#39;DebtToIncomePercent&#39;<br>
+    | &#39;UnsecuredDebtToIncomePercent&#39; | &#39;PaymentToIncomePercent&#39;       | &#39;MinimumMonthlyPayment&#39;<br>
+    | &#39;Mileage&#39;                      | &#39;VehicleAge&#39;                   | &#39;WatercraftLength&#39; 
+    | &#39;PromotionalInterestRate&#39;      | &#39;PromotionalDuration&#39;          | &#39;PrimeRateModifies&#39;<br>
+    | &#39;PrimeRateType&#39;                | &#39;DrawPeriodInMonths&#39;           | &#39;MaxLienPosition&#39;<br>
+    | &#39;LiabilityCount&#39;               | &#39;OldestLiabilityInMonths&#39;      | &#39;GrossMonthlyIncome&#39;<br>
+    | &#39;GrossMonthlyIncomeRatio&#39;      | &#39;TotalUnsecuredDebt&#39;<br>
+    | &#39;TotalUnsecuredDebtInstitutionSpecific&#39;
+</code></pre></div><h2 id='4-expressions'>4 Expressions</h2>
+<p>Expressions are the fundamental building block of Banking Meta Language and are expected to evaluate eventually to either a number, a string, a boolean, a domain keyword, an identifier, or an expression grouping. Almost everything is an expression.</p>
+<h3 id='4-1-interval-expressions'>4.1 Interval Expressions</h3>
+<p>An expression of the form <code>( &#39;[&#39; | &#39;(&#39; ) expression &#39;,&#39; expression ( &#39;]&#39; | &#39;)&#39; )</code> is an interval expression. Interval expressions are used to represent an interval between two numbers where substituting <code>expression</code> from the interval expression form with <em>X1</em> and <em>X2</em>, respectively, <em>X1 &lt; X2</em> must be true. The opening and closing characters represent if the interval is exclusive or inclusive. Using the earlier notation and introducing a number <em>n</em> the following table can be used to determine if <em>n</em> satisfies an interval.</p></p>
+
+<table><thead>
+<tr>
+<th>Expression</th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><em>[ X1,</em></td>
+<td><em>n &gt;= X1</em></td>
+</tr>
+<tr>
+<td><em>( X1,</em></td>
+<td><em>n &gt; X1</em></td>
+</tr>
+<tr>
+<td><em>,X2 ]</em></td>
+<td><em>n &lt;= X2</em></td>
+</tr>
+<tr>
+<td><em>,X2 )</em></td>
+<td><em>n &lt; X2</em></td>
+</tr>
+</tbody></table>
+
+<h4 id='4-1-1-example'>4.1.1 Example</h4>
+
+<p><code>[42, 100)</code>
+<code>(10.1111, 11)</code></p>
+
+<h3 id='4-2-unary-expressions'>4.2 Unary Expressions</h3>
+
+<p>An expression of the form <code>( &#39;!&#39; | &#39;-&#39; | &#39;&gt;&#39; | &#39;&gt;=&#39; | &#39;&lt;&#39; | &#39;&lt;=&#39; | &#39;!=&#39; | &#39;==&#39; | &#39;in&#39; | &#39;out&#39; ) unary | primary</code> is a unary expression. We deviate a bit from the traditional unary operators <code>!</code> and <code>-</code> to also include comparison operators. This change exists to have valid tuple expressions in our table language construct.</p>
+
+<h3 id='4-3-tuple-expressions'>4.3 Tuple Expressions</h3>
+
+<p>An expression of the form <code>expression ( &#39;,&#39; expression )*</code> is a tuple expression. This allows for any number of expressions to be joined by a comma. A tuple can be expressed as a single expression and will be inferred depending on usage. Banking Meta Language has no support for empty tuples also referred to as the 0-tuple. In the following examples we demonstrate the usage of comparison unary expressions which we&#39;ll build upon further in the table expressions section.</p>
+
+<h4 id='4-3-1-example'>4.3.1 Example</h4>
+
+<p><code>in [42, 100), out (10.1111, 11), == 10</code>
+<code>1 + 1 &lt; 3</code></p>
+
+<h3 id='4-4-pipe-expressions'>4.4 Pipe Expressions</h3>
+
+<p>An expression of the form <code>&#39;|&#39; tuple</code> is a pipe expression. The pipe expression is an essential building block of the table expression and is signaled to the parser by the start of the pipe operator. As detailed in the tuple expression section, the single element tuple would be inferred if following the pipe operator.</p>
+
+<h4 id='4-4-1-example'>4.4.1 Example</h4>
+
+<p><code>| in [42, 100), out (10.1111, 11), == 10</code>
+<code>| 1 + 1 &lt; 3</code></p>
+
+<h3 id='4-5-table-expressions'>4.5 Table Expressions</h3>
+
+<p>An expression of the form <code>&#39;table&#39; tuple ( pipe &#39;=&gt;&#39; expression )+ ( &#39;_&#39; &#39;=&gt;&#39; expression )?</code> is a table expression. A table expression always begins with the keyword <code>table</code> and is followed by a tuple. This tuple is used by the table statement to determine the required length of each pipe tuple as these must match, and the values which should be supplied to the pipe expression. Because a tuple is required to define the table, tables are effectively n-dimensional.</p>
+
+<p>Continuing along the expression, <code>( pipe &#39;=&gt;&#39; expression )+</code>, signifies the pattern matching expression and because of <code>+</code> at least one pattern is expected. When expanding the pipe, the tuple must be of the same length as the starting table tuple. Each branch is evaluated in descending order and if a match is found the right-hand side of the lambda token is returned. The first matching branch will be returned and no further branches will be evaluated.</p>
+
+<p>The final grammar, <code>( &#39;_&#39; &#39;=&gt;&#39; expression )?</code>, makes the table exhaustive, meaning if no match is found then this is the default branch which will be taken. However, because the exhaustive branch is optional, no branch could match the table arguments. In that case we opt to return a null object, rather than throw an exception like would happen in C#.</p>
+
+<h4 id='4-5-1-example'>4.5.1 Example</h4>
+
+<p>The following example is table which returns an interval representing thr allowable loan terms when constrained by a borrowers credit score and the age of a vehicle liability.
+<code>
+table CreditScore, VehicleAge
+ | in [0, 659), in [0, 6] =&gt; [12, 24]
+ | in [0, 659), in [7, 9] =&gt; [12, 24]
+ | in [660, 850], in [0, 6] =&gt; [12, 120]
+ | in [660, 850], in [7, 9] =&gt; [12, 96]
+ _ =&gt; [12, 12]
+</code></p>
+
+<h3 id='4-6-interval-operations'>4.6 Interval Operations</h3>
+
+<p>An expression of the form <code>expression ( &#39;in&#39; | &#39;out&#39; ) expression</code> is an interval operation. The left-hand side expression must evaluate to either a number or an interval. The right-hand side expression must evaluate to an interval. The <code>in</code> keyword</p>
+
+<h3 id='4-7-function-expressions'>4.7 Function Expressions</h3>
+
+<p>An expression of the form <code>&#39;fun&#39; ( IDENTIFIER | DOMAIN ) &#39;=&gt;&#39; expression</code> is a function expression. A function expression is always preceded by the keyword <code>fun</code>. A function name can either be an identifier token or a domain keyword token. The identifier can be any alpha numeric character sequence if it starts with an alpha character. The domain is allowed to be any reserved domain keyword. </p>
+
+<p>All function names must be unique. Because a function is an expression it can be called where an expression is expected. This allows for reusable expressions.</p>
+
+<h4 id='4-7-1-example'>4.7.1 Example</h4><div class="highlight"><pre class="highlight plaintext"><code>fun LoanAmount =&gt;
+  table CreditScore
+  | in (720, 850] =&gt; 75000
+  | in (640, 720] =&gt; 40000
+  | in (0, 640) =&gt; 28000
+  _ =&gt; 0
+</code></pre></div><h2 id='5-declarations'>5 Declarations</h2>
+<p>Declarations are a way to neatly represent all of the various rules, functions, and top-level expressions comprising source code. Declarations are not exactly statements as declarations will not produce any side effects.</p>
+<h3 id='5-1-rule-declarations'>5.1 Rule Declarations</h3>
+<p>Rules are a special language construct and aren&#39;t classified as an expression. Rules allow for modifications to runtime values and provide an explicit loan denial system. There are two supported rule declarations, deny and adjust.</p>
+<h4 id='5-1-1-rule-deny'>5.1.1 Rule Deny</h4>
+
+<p>A declaration of the form <code>&#39;rule&#39; &#39;deny&#39; STRING &#39;=&gt;&#39; expression</code> is a deny rule. The <code>STRING</code> token is human readable text to clearly express the rule and will be used as the display text to the end user. The right-hand side expression is required to evaluate to either true or false.</p>
+
+<p><h5 id='5-1-1-1-example'>5.1.1.1 Example</h5><div class="highlight"><pre class="highlight plaintext"><code>rule deny &quot;Reject this loan if credit score is negative!&quot; =&gt;
+  CreditScore &lt; 0
+</code></pre></div><h4 id='5-1-2-rule-adjust'>5.1.2 Rule Adjust</h4>
+<p>A declaration of the form <code>&#39;rule&#39; &#39;adjust&#39; DOMAIN STRING &#39;=&gt;&#39; expression</code> is an adjust rule. We&#39;ve introduced a new token to the rule, <code>DOMAIN</code>. The <code>DOMAIN</code> is the domain property which can be adjusted. The expected return type of the expression is a number. The adjustment will be an arithmetic add operation, so if the adjustment should be a subtraction provide a negative number.</p>
+<h5 id='5-1-2-1-example'>5.1.2.1 Example</h5><div class="highlight"><pre class="highlight plaintext"><code>rule adjust InterestRate &quot;Loans exceeding 100 months should be raised half a point.&quot; =&gt;
+  LoanTerm &gt; 100 
+    ? .5
+    : 0
+</code></pre></div><h2 id='6-semantic-analysis'>6 Semantic Analysis</h2>
+<p>Banking Meta Language has no user defined types, and only a handful of supported types. The base types are <code>integer</code>, <code>floating point</code>, <code>string</code>, and <code>bool</code>. The base <code>floating point</code> type complies with the IEC 60559:1989 (IEEE 754) standard for binary floating-point arithmetic. Banking Meta Language also has the compound type <code>interval</code> which is an aggregation of base types. Another compound type, which is only valid in the context of a <code>table</code> expression is the <code>tuple</code> type. All types in Banking Meta Language are inferred, meaning that the compiler fully deduces the type without any explicit type annotations. </p></p>
+
+<p>There are a couple of language constructs which have types associated to them.
+* Functions: All functions have a return type associated. In Banking Meta Language functions are always parameterless so there&#39;s no need to worry about function arguments during calls.
+* Expressions: All expressions have some type based on the evaluation of it. Because most everything is an expression everything has a type associated to it.</p>
+
+<p>The language grammar and parser do a pretty good job defining the language rules and enforcing the language rules respectively. However there are several rules which require a semantic analysis pass. A note on scoping, Banking Meta Language only has a global scope.</p>
+
+<h3 id='6-1-coercion'>6.1 Coercion</h3>
+
+<p>Banking Meta Language supports coercion in the direction of an <code>integer</code> to a <code>floating point</code> and will do so when determing compatible types, e.g. either doing comparison or determing the return type of conditional expression.</p>
+
+<h3 id='6-2-functions-semantic-rules'>6.2 Functions Semantic Rules</h3>
+
+<ul>
+<li>Function identifiers must be unique.</li>
+</ul>
+
+<h3 id='6-3-rule-semantic-rules'>6.3 Rule Semantic Rules</h3>
+
+<ul>
+<li>Rules have a required <code>string</code> token which must be unique between rules.</li>
+<li>Deny rules must have a return type of <code>bool</code>.</li>
+<li>Adjust rules must have a return type of either <code>integer</code> or <code>floating point</code>.</li>
+</ul>
+
+<h3 id='6-4-interval-operation-expression-semantic-rules'>6.4 Interval Operation Expression Semantic Rules</h3>
+
+<ul>
+<li>An interval operation has two operands, the left-hand side can either be a <code>integer</code>, <code>floating point</code> or an <code>interval</code> and the right-hand side must be an <code>interval</code> type. The interval operation resulting type is always a <code>bool</code>.</li>
+</ul>
+
+<h3 id='6-5-ternary-expression-semantic-rules'>6.5 Ternary Expression Semantic Rules</h3>
+
+<ul>
+<li>A ternary operator has three operands, the condition, an expression when the condition evaluates to true, and an expression for when the condition evaluates to false. The condition operand must be a <code>bool</code> type. The expressions can be any type but must be compatible, i.e. one can be coerced to the other.</li>
+</ul>
+
+<h3 id='6-6-logical-expression-semantic-rules'>6.6 Logical Expression Semantic Rules</h3>
+
+<ul>
+<li>Logical operators <code>and</code> and <code>or</code> both have two operands and the two operands must be a <code>bool</code> type. The resulting type is always a <code>bool</code>.</li>
+</ul>
+
+<h3 id='6-7-equality-expression-semantic-rules'>6.7 Equality Expression Semantic Rules</h3>
+
+<ul>
+<li>Any two compatible types can be compared using equality operators. The resulting type is always a <code>bool</code>.</li>
+</ul>
+
+<h3 id='6-8-comparison-expression-semantic-rules'>6.8 Comparison Expression Semantic Rules</h3>
+
+<ul>
+<li>Comparison expressions have two operands. The only valid types for the operands are <code>integer</code> and <code>floating point</code>. Type coercion will occur in the event the operand types are valid but differ. The resulting type is always a <code>bool</code>.</li>
+</ul>
+
+<h3 id='6-9-term-expression-semantic-rules'>6.9 Term Expression Semantic Rules</h3>
+
+<ul>
+<li>Term expressions have two operands. The only valid types for the operands are <code>integer</code> and <code>floating point</code>. Type coercion will occur in the event the operand types are valid but differ. The resulting type will either be an <code>integer</code> or a <code>floating point</code>. In the event the operand types differed, the resulting type will be the type which was coerced to.</li>
+</ul>
+
+<h3 id='6-10-unary-expression-semantic-rules'>6.10 Unary Expression Semantic Rules</h3>
+
+<ul>
+<li>Unary operator <code>!</code> can only be used with a <code>bool</code> type and will return a <code>bool</code> type.</li>
+<li>Unary operator <code>-</code> can be used with either an <code>integer</code> or a <code>floating point</code> and produces the same type as the operand.</li>
+<li>All other unary operators adhere to the same right-hand side semantics as their binary expression equivalents.</li>
+</ul>
+
+<h3 id='6-11-tuple-semantic-rules'>6.11 Tuple Semantic Rules</h3>
+
+<ul>
+<li>A tuple can consist of at most 10 element, this limit is artificial and can be expanded in the future if the need arises. A tuple can consist of mixed types. A tuple is itself not an expression, but can consist of expression and is just the <code>tuple</code> type during type checking.</li>
+</ul>
+
+<h3 id='6-12-table-expression-semantic-rules'>6.12 Table Expression Semantic Rules</h3>
+
+<ul>
+<li>A table expression consists of an argument which is a <code>tuple</code> type, and multiple branches. Each branch consists of a condition and an expression. </li>
+<li>A branch condition must be <code>tuple</code> type. The tuple length of a branch must equal the same tuple length of the table argument. Each expression in the tuple must evaluate to a <code>bool</code>. From here each evaluated expression is logically and&#39;ed together and a resulting type of <code>bool</code> is produced.</li>
+<li>A branch condition <code>tuple</code> may contain unary comparison operators, Banking Meta Language will combine the expression at the same position from the table argument tuple to form a binary expression, where the branch tuple expressions make up the operator and the right-hand side operand.
+
+<ul>
+<li>Some further clarity. In the following table expression the argument is a single positional tuple. When evaluating each branch and upon encountering a comparison unary operator a binary expression is formed. So, <code>&gt;= 90</code> becomes <code>Grade &gt;= 90</code>.
+<code>
+table Grade | &gt;= 90 =&gt; &quot;A&quot; | &gt;= 80 =&gt; &quot;B&quot; ...
+</code></li>
+</ul></li>
+<li>A table has a single return <code>type</code>, and because of this all branch expressions must have compatible types. Like earlier in the event the types differ but type coercion is possible the resulting type is the coerced to type.</li>
+</ul>
+
+<h3 id='6-13-interval-expression-semantic-rules'>6.13 Interval Expression Semantic Rules</h3>
+
+<p>Please refer to the interval expression section for a breakdown of semantic rules.</p>
+
+<h2 id='7-syntactic-grammar-ebnf'>7 Syntactic Grammar (EBNF)</h2><div class="highlight"><pre class="highlight plaintext"><code>program   ::= declaration+ EOF
+declaration 
+          ::= function 
+            | rule 
+            | expression
+
+/*
+    Declarations
+*/
+function  ::= 'fun' ( IDENTIFIER | DOMAIN ) '=&gt;' expression
+rule      ::= 'rule' ( deny | adjust )
+deny      ::= 'deny' STRING '=&gt;' expression
+adjust    ::= 'adjust' rule_chain
+rule_chain 
+          ::= DOMAIN STRING '=&gt;' expression
+
+/*
+    Expressions
+*/
+expression
+         ::= ternary
+           | function
+           | table
+ternary  ::= interval_op ( '?' interval_op ':' interval_op )?
+interval_op
+         ::= or ( ('in' | 'out' ) or )?
+or       ::= and ( 'or' and )*
+and      ::= equality ( 'and' equality )*
+equality ::= comparison ( ( '!=' | '==' ) comparison )*
+comparison 
+         ::= term ( ( '&gt;' | '&gt;=' | '&lt;' | '&lt;=' ) term )*
+term     ::= factor ( ( '-' | '+' ) factor )*
+factor   ::= unary ( ( '/' | '*' ) unary )*
+unary    ::= ( '!' | '-' | '&gt;' | '&gt;=' | '&lt;' | '&lt;=' | '!=' | '==' | 'in' | 'out' ) unary | primary
+primary  ::= NUMBER
+           | STRING
+           | DOMAIN
+           | IDENTIFIER
+           | BOOLEAN
+           | interval
+           | '{' expression '}'
+table    ::= 'table' tuple ( pipe '=&gt;' expression )+ ( '_' '=&gt;' expression )?
+/* Not a pure expression, we don't allow nested tuples */
+tuple    ::= expression ( ',' expression )*
+/* Not a pure expression, pipes are components of tables */
+pipe     ::= '|' tuple
+
+/*
+    Lexical Grammar
+    For unicode character classes https://www.compart.com/en/unicode/category
+*/
+interval ::= ( '[' | '(' ) expression ',' expression ( ']' | ')' )
+BOOLEAN  ::= 'true'
+           | 'false'
+NUMBER   ::= DIGIT+ ( '.' DIGIT+)?
+STRING   ::= '"' '&lt;any character except "&gt;'* '"'
+IDENTIFIER 
+         ::= ALPHA ( ALPHA | DIGIT )*
+ALPHA    ::= '&lt;A Unicode character of classes Lu, Ll, Lt, Lm, Lo, or Nl&gt;'
+DIGIT    ::= '0'
+           | '1'
+           | '2'
+           | '3'
+           | '4'
+           | '5'
+           | '6'
+           | '7'
+           | '8'
+           | '9'
+DOMAIN   ::= 'CreditScore'
+           | 'LoanAmount'
+           | 'LoanTerm'
+           | 'InterestRate'
+           | 'LoanToValuePercent'
+           | 'DebtToIncomePercent'
+           | 'UnsecuredDebtToIncomePercent'
+           | 'PaymentToIncomePercent'
+           | 'MinimumMonthlyPayment'
+           | 'Mileage'
+           | 'VehicleAge'
+           | 'WatercraftLength'
+           | 'PromotionalInterestRate'
+           | 'PromotionalDuration'
+           | 'PrimeRateModifies'
+           | 'PrimeRateType'
+           | 'DrawPeriodInMonths'
+           | 'MaxLienPosition'
+           | 'LiabilityCount'
+           | 'OldestLiabilityInMonths'
+           | 'GrossMonthlyIncome'
+           | 'GrossMonthlyIncomeRatio'
+           | 'TotalUnsecuredDebt'
+           | 'TotalUnsecuredDebtInstitutionSpecific'
+</code></pre></div><h2 id='8-resources'>8 Resources</h2>
+
+<p>Google Scholar aptly summarizes the development approach to the Banking Meta Language, &quot;Stand on the shoulders of giants&quot;. Resources made use of in no particular order.</p>
+
+<ul>
+<li>F# 4.1 Language Specification (https://fsharp.org/specs/language-spec/4.1/FSharpSpec-4.1-latest.pdf)</li>
+<li>EBNF Grammar Visualizer (https://www.bottlecaps.de/rr/ui)</li>
+<li>XQuery 1.0 XML Query Language Specification (Specifically EBNF notation) (https://www.w3.org/TR/2010/REC-xquery-20101214/#EBNFNotation)</li>
+<li>Practical application for building interpreters (https://craftinginterpreters.com/)</li>
+<li>Stanford CS143 Compilers (https://web.stanford.edu/class/cs143/)</li>
+</ul>
 
       </div>
       <div class="dark-box">
