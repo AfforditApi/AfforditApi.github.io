@@ -1,0 +1,1228 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Affordit Loan Insights Portal",
+    "description": "Affordit API for communicating a financial institution's products and applications.",
+    "version": "v1"
+  },
+  "paths": {
+    "/Application": {
+      "post": {
+        "tags": [
+          "Application"
+        ],
+        "summary": "Creates a new application.",
+        "requestBody": {
+          "description": "Application to create",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Application"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Application"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Application"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Application"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Application was created successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Application was improperly formatted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Application/{key}": {
+      "put": {
+        "tags": [
+          "Application"
+        ],
+        "summary": "Updates the details for an already existing application matching the application's\r\nthird party key.",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "description": "The third party key for the application to update.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Application"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Application"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Application"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Application"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Application was updated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Application was improperly formatted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No application matching key was found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Products/Echo": {
+      "get": {
+        "tags": [
+          "Products"
+        ],
+        "summary": "Echos the provided string. Used for debugging connection.",
+        "parameters": [
+          {
+            "name": "echo",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the supplied string.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Products": {
+      "get": {
+        "tags": [
+          "Products"
+        ],
+        "summary": "Retrieves all products.",
+        "responses": {
+          "200": {
+            "description": "Returns all products",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Product"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "If there are no products",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Products"
+        ],
+        "summary": "Creates new product(s).",
+        "requestBody": {
+          "description": "List of product(s) to create",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Returns the newly created product(s)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Product"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "If the product(s) are incomplete or non existent.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Products"
+        ],
+        "summary": "Bulk updates products. Updates existing products and creates new ones if applicable.",
+        "requestBody": {
+          "description": "Products to update and/or create",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Returns the updated and created products",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Product"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "If the product(s) are incomplete",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Products"
+        ],
+        "summary": "Removes all products.",
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/Products/{id}": {
+      "get": {
+        "tags": [
+          "Products"
+        ],
+        "summary": "Retrieves the product details for product matching provided Id.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The product Id",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the matching product",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "If there is no product matching Id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Products"
+        ],
+        "summary": "Updates the details for product matching provided Id.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The product Id",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The product to update",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Product"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Product"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Product"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Product"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Returns the updated product",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "If the product is incomplete",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "If the product does not yet exist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Products"
+        ],
+        "summary": "Removes product matching provided Id.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The product Id",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "404": {
+            "description": "No product found matching Id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Products/Search": {
+      "get": {
+        "tags": [
+          "Products"
+        ],
+        "summary": "Searches for products using query parameters.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "The product Id",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "description": "The name of the product",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "group",
+            "in": "query",
+            "description": "Loan grouping of the product",
+            "schema": {
+              "$ref": "#/components/schemas/LoanGrouping"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns any matching products",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Product"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Address": {
+        "type": "object",
+        "properties": {
+          "addressLine1": {
+            "type": "string",
+            "description": "The street address.",
+            "nullable": true
+          },
+          "addressLine2": {
+            "type": "string",
+            "description": "Apartment number, suite number, etc.",
+            "nullable": true
+          },
+          "city": {
+            "type": "string",
+            "description": "The city of the address.",
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "description": "The state of the address. This can be provided as the state abbreviation or the\r\nfull name of the state.",
+            "nullable": true
+          },
+          "zip": {
+            "type": "integer",
+            "description": "The zip code of the address.",
+            "format": "int32",
+            "nullable": true
+          },
+          "zip4": {
+            "type": "integer",
+            "description": "Extra zip code identifier.",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "A mailing address."
+      },
+      "Applicant": {
+        "required": [
+          "creditScores",
+          "firstName",
+          "lastName"
+        ],
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "description": "The first name of the applicant."
+          },
+          "middleName": {
+            "type": "string",
+            "description": "The middle name of the applicant.",
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "description": "The last name of the applicant."
+          },
+          "suffix": {
+            "type": "string",
+            "description": "An optional part of the applicant's name providing additional designations.",
+            "nullable": true
+          },
+          "socialSecurityNumber": {
+            "type": "string",
+            "description": "The social security number of the applicant.",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "description": "The email address of the applicant.",
+            "nullable": true
+          },
+          "phoneNumber": {
+            "type": "string",
+            "description": "The phone number of the applicant.",
+            "nullable": true
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "description": "The date of the birth of the applicant. This date is expected to be in UTC format.",
+            "format": "date-time",
+            "nullable": true
+          },
+          "currentAddress": {
+            "$ref": "#/components/schemas/Address"
+          },
+          "mailingAddress": {
+            "$ref": "#/components/schemas/Address"
+          },
+          "maritalStatus": {
+            "$ref": "#/components/schemas/MaritalStatus"
+          },
+          "creditScores": {
+            "$ref": "#/components/schemas/CreditScores"
+          },
+          "employmentInfo": {
+            "$ref": "#/components/schemas/EmploymentInfo"
+          },
+          "financialInfo": {
+            "$ref": "#/components/schemas/FinancialInfo"
+          },
+          "assets": {
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Asset"
+            },
+            "description": "Asset information for the applicant.",
+            "nullable": true
+          },
+          "liabilities": {
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Liability"
+            },
+            "description": "Liability information for the applicant.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents an applicant for an application."
+      },
+      "Application": {
+        "required": [
+          "primaryApplicant"
+        ],
+        "type": "object",
+        "properties": {
+          "thirdPartyKey": {
+            "type": "string",
+            "description": "A key to track the Application in the Affordit system. This can be the internal application\r\nnumber used by your Financial Institution. If a key is not provided one will be assigned\r\nto this Application.",
+            "nullable": true
+          },
+          "submitDate": {
+            "type": "string",
+            "description": "The date which the Application has been submitted in your internal system. This date\r\nis expected to be in UTC format.",
+            "format": "date-time",
+            "nullable": true
+          },
+          "requestedLoan": {
+            "$ref": "#/components/schemas/RequestedLoan"
+          },
+          "primaryApplicant": {
+            "$ref": "#/components/schemas/Applicant"
+          },
+          "secondaryApplicant": {
+            "$ref": "#/components/schemas/Applicant"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Asset": {
+        "required": [
+          "totalAmount",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/AssetType"
+          },
+          "originationDate": {
+            "type": "string",
+            "description": "The date which the asset was originated. This date is expected to be in UTC format.",
+            "format": "date-time",
+            "nullable": true
+          },
+          "rateOfReturn": {
+            "type": "number",
+            "description": "The estimated rate of return for the asset.",
+            "format": "double",
+            "nullable": true
+          },
+          "totalAmount": {
+            "$ref": "#/components/schemas/Currency"
+          }
+        },
+        "additionalProperties": false,
+        "description": "A financial asset."
+      },
+      "AssetType": {
+        "enum": [
+          "Checking",
+          "Savings",
+          "HomeEquity",
+          "CertificateOfDeposit",
+          "MoneyMarket",
+          "CashDeposit",
+          "Bond",
+          "IndividualRetirementAccount",
+          "OtherRetirementFund",
+          "BridgeLoanNotDeposited",
+          "CashOnHand",
+          "Gift",
+          "MutualFunds",
+          "SecuredBorrowerFunds",
+          "NetSaleProceeds",
+          "Other",
+          "DownPayment"
+        ],
+        "type": "string"
+      },
+      "CreditScores": {
+        "type": "object",
+        "properties": {
+          "equifaxScore": {
+            "maximum": 850,
+            "minimum": 300,
+            "type": "integer",
+            "description": "The credit score designated by Equifax.",
+            "format": "int32",
+            "nullable": true
+          },
+          "experianScore": {
+            "maximum": 850,
+            "minimum": 300,
+            "type": "integer",
+            "description": "The credit score designated by Experian.",
+            "format": "int32",
+            "nullable": true
+          },
+          "transUnionScore": {
+            "maximum": 850,
+            "minimum": 300,
+            "type": "integer",
+            "description": "The credit score designated by TransUnion.",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Scores assigned by one of three large credit bureaus."
+      },
+      "Currency": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "number",
+            "description": "The value of the currency",
+            "format": "double",
+            "nullable": true
+          },
+          "type": {
+            "$ref": "#/components/schemas/CurrencyType"
+          }
+        },
+        "additionalProperties": false,
+        "description": "A value type with currency information."
+      },
+      "CurrencyType": {
+        "enum": [
+          "Usd"
+        ],
+        "type": "string"
+      },
+      "DebtInstrument": {
+        "required": [
+          "payment",
+          "paymentIncludesInterest"
+        ],
+        "type": "object",
+        "properties": {
+          "interestRate": {
+            "type": "number",
+            "description": "The interest rate for the debt instrument.",
+            "format": "double",
+            "nullable": true
+          },
+          "totalTerm": {
+            "type": "integer",
+            "description": "The the total term length in months for the debt instrument. If the debt instrument is unstructured\r\ndebt, then this won't be used even if it is provided.",
+            "format": "int32",
+            "nullable": true
+          },
+          "dateOpened": {
+            "type": "string",
+            "description": "The date which this debt instrument was opened. This date is expected to be in UTC format.",
+            "format": "date-time",
+            "nullable": true
+          },
+          "monthsReviewed": {
+            "type": "integer",
+            "description": "The number of months which the debt instrument has been reported.",
+            "format": "int32",
+            "nullable": true
+          },
+          "creditorName": {
+            "type": "string",
+            "description": "The name of the creditor.",
+            "nullable": true
+          },
+          "accountNumber": {
+            "type": "string",
+            "description": "The account number for the debt instrument designated by the creditor.",
+            "nullable": true
+          },
+          "paymentsPerYear": {
+            "type": "integer",
+            "description": "Conditionally required. The number of payments in a year. This value if not provided\r\nwill be assumed to be 12, meaning one payment made each month. For student loans which\r\namortize daily the value should be 365",
+            "format": "int32",
+            "nullable": true
+          },
+          "payment": {
+            "$ref": "#/components/schemas/Currency"
+          },
+          "paymentIncludesInterest": {
+            "type": "boolean",
+            "description": "Indicates whether or not that the supplied payment includes interest."
+          },
+          "watercraftInfo": {
+            "$ref": "#/components/schemas/WatercraftInfo"
+          },
+          "vehicleInfo": {
+            "$ref": "#/components/schemas/VehicleInfo"
+          },
+          "address": {
+            "$ref": "#/components/schemas/Address"
+          },
+          "appraisalValue": {
+            "$ref": "#/components/schemas/Currency"
+          }
+        },
+        "additionalProperties": false
+      },
+      "EmploymentInfo": {
+        "type": "object",
+        "properties": {
+          "nameOfEmployer": {
+            "type": "string",
+            "description": "The name of the employer.",
+            "nullable": true
+          },
+          "employerAddress": {
+            "$ref": "#/components/schemas/Address"
+          },
+          "employerPhoneNumber": {
+            "type": "string",
+            "description": "The phone number of the employer.",
+            "nullable": true
+          },
+          "yearsAtJob": {
+            "type": "integer",
+            "description": "The number of years at the job.",
+            "format": "int32",
+            "nullable": true
+          },
+          "jobTitle": {
+            "type": "string",
+            "description": "The title of the job.",
+            "nullable": true
+          },
+          "industry": {
+            "type": "string",
+            "description": "The general industry the job is in.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Information which pertains to employment."
+      },
+      "FinancialInfo": {
+        "type": "object",
+        "properties": {
+          "yearlyGrossIncome": {
+            "$ref": "#/components/schemas/GrossIncome"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents financial information."
+      },
+      "GrossIncome": {
+        "type": "object",
+        "properties": {
+          "wages": {
+            "$ref": "#/components/schemas/Currency"
+          },
+          "overtime": {
+            "$ref": "#/components/schemas/Currency"
+          },
+          "bonuses": {
+            "$ref": "#/components/schemas/Currency"
+          },
+          "commissions": {
+            "$ref": "#/components/schemas/Currency"
+          },
+          "dividends": {
+            "$ref": "#/components/schemas/Currency"
+          },
+          "netRentalIncome": {
+            "$ref": "#/components/schemas/Currency"
+          },
+          "otherIncome": {
+            "$ref": "#/components/schemas/Currency"
+          },
+          "describeOtherIncome": {
+            "type": "string",
+            "description": "The description of the other income sources.",
+            "nullable": true
+          },
+          "totalIncome": {
+            "$ref": "#/components/schemas/Currency"
+          }
+        },
+        "additionalProperties": false,
+        "description": "The total amount of income without taxes and other deduction."
+      },
+      "Liability": {
+        "required": [
+          "debtInstrument",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/LiabilityType"
+          },
+          "startingBalance": {
+            "$ref": "#/components/schemas/Currency"
+          },
+          "currentBalance": {
+            "$ref": "#/components/schemas/Currency"
+          },
+          "highCredit": {
+            "$ref": "#/components/schemas/Currency"
+          },
+          "pastDueAmount": {
+            "$ref": "#/components/schemas/Currency"
+          },
+          "debtInstrument": {
+            "$ref": "#/components/schemas/DebtInstrument"
+          }
+        },
+        "additionalProperties": false,
+        "description": "A liability is a trade-line which an applicant is responsible for."
+      },
+      "LiabilityType": {
+        "enum": [
+          "Mortgage",
+          "Automobile",
+          "Motorcycle",
+          "RecreationalVehicle",
+          "Trailer",
+          "Watercraft",
+          "CreditCard",
+          "PersonalLoan",
+          "Student",
+          "HELOC",
+          "HELOAN",
+          "Other"
+        ],
+        "type": "string"
+      },
+      "LoanGrouping": {
+        "enum": [
+          "NewAutomobile",
+          "UsedAutomobile",
+          "NewMotorcycle",
+          "UsedMotorcycle",
+          "NewPremierMotorcycle",
+          "UsedPremierMotorcycle",
+          "NewRecreationalVehicle",
+          "UsedRecreationalVehicle",
+          "NewTrailer",
+          "UsedTrailer",
+          "NewWatercraft",
+          "UsedWatercraft",
+          "NewMortgage",
+          "RefinancedMortgage",
+          "HELOC",
+          "HELOAN",
+          "Personal",
+          "Student",
+          "CreditCard",
+          "Other",
+          "AccountOrigination",
+          "CrossSell",
+          "Payoff",
+          "NewATV",
+          "UsedATV",
+          "NewSnowmobile",
+          "UsedSnowmobile",
+          "NewTruckCamper",
+          "UsedTruckCamper",
+          "NewUTV",
+          "UsedUTV",
+          "NewJetski",
+          "UsedJetski"
+        ],
+        "type": "string"
+      },
+      "MaritalStatus": {
+        "enum": [
+          "Unknown",
+          "Single",
+          "NowMarried",
+          "Divorced"
+        ],
+        "type": "string"
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": { }
+      },
+      "Product": {
+        "required": [
+          "group",
+          "name",
+          "productSheet"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "An identifier for the product. This is not required when submitting new products.\r\nThis should be used when updating existing products.",
+            "format": "int64",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the product."
+          },
+          "group": {
+            "$ref": "#/components/schemas/LoanGrouping"
+          },
+          "productSheet": {
+            "type": "string",
+            "description": "The product sheet for the product. The string value in the product sheet is expected\r\nto adhere to the Affordit Banking Meta Language (BML) specification."
+          }
+        },
+        "additionalProperties": false,
+        "description": "A product represents an atomic financial product for an institution."
+      },
+      "RequestedLoan": {
+        "required": [
+          "loanGroup",
+          "loanName"
+        ],
+        "type": "object",
+        "properties": {
+          "requestedLoanAmount": {
+            "$ref": "#/components/schemas/Currency"
+          },
+          "reservesAmount": {
+            "$ref": "#/components/schemas/Currency"
+          },
+          "numberOfMonthsForReserves": {
+            "type": "integer",
+            "description": "Number of months the reserves amount will cover.",
+            "format": "int32",
+            "nullable": true
+          },
+          "isBalanceTransfer": {
+            "type": "boolean",
+            "description": "Indicates that the loan represents a balance transfer.",
+            "nullable": true
+          },
+          "balanceTransferAmount": {
+            "$ref": "#/components/schemas/Currency"
+          },
+          "loanName": {
+            "type": "string",
+            "description": "The name of the loan. The pair of loan name and loan group should match a configured\r\nproduct."
+          },
+          "loanGroup": {
+            "$ref": "#/components/schemas/LoanGrouping"
+          },
+          "downPaymentAmount": {
+            "$ref": "#/components/schemas/Currency"
+          },
+          "debtInstrument": {
+            "$ref": "#/components/schemas/DebtInstrument"
+          },
+          "isCustomTerm": {
+            "type": "boolean",
+            "description": "Indicates that the supplied term is a result of a custom entry and not tied explicitly\r\nto a product.",
+            "nullable": true
+          },
+          "isCustomInterestRate": {
+            "type": "boolean",
+            "description": "Indicates that the supplied interest rate is a result of a custom entry and not tied\r\nexplicitly to a product.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "The loan an individual has applied for."
+      },
+      "VehicleInfo": {
+        "type": "object",
+        "properties": {
+          "vehicleIdentificationNumber": {
+            "type": "string",
+            "description": "Identifying code for the vehicle.",
+            "nullable": true
+          },
+          "year": {
+            "type": "integer",
+            "description": "The year of the vehicle.",
+            "format": "int32",
+            "nullable": true
+          },
+          "make": {
+            "type": "string",
+            "description": "Make of the vehicle.",
+            "nullable": true
+          },
+          "model": {
+            "type": "string",
+            "description": "Model type of the vehicle.",
+            "nullable": true
+          },
+          "mileage": {
+            "type": "integer",
+            "description": "The current mileage of the vehicle measured in Miles.",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Information which pertains to a vehicle."
+      },
+      "WatercraftInfo": {
+        "type": "object",
+        "properties": {
+          "craftLengthInFeet": {
+            "type": "integer",
+            "description": "Represents the length in feet of the watercraft.",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Information which pertains to a watercraft."
+      }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "apiKey",
+        "description": "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 12345abcdef\"",
+        "name": "Authorization",
+        "in": "header"
+      }
+    }
+  },
+  "security": [
+    {
+      "Bearer": [ ]
+    }
+  ]
+}
