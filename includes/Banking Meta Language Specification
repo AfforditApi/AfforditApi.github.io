@@ -1,4 +1,4 @@
-<h1 id='banking-meta-language-specification'>Banking Meta Language Specification</h1><h2 id='1-introduction'>1 Introduction</h2>
+<h1 id='bml-specification'>BML Specification</h1><h2 id='1-introduction'>1 Introduction</h2>
 <p>The Banking Meta Language is a functional, non-Turing complete, strongly typed language used to represent a financial institution’s product catalog which includes dynamic rate adjustments and explicit loan denial.</p>
 
 <p>Once Banking Meta Language source code has been parsed and been determined to be valid it must be executed. We leverage existing tools in the .NET ecosystem, for example the System.Linq.Expressions namespace to translate our parsed expressions into .NET domain expressions which can then be compiled and executed all at run time. This provides us with multiple benefits. the largest being we can leverage the existing C# compiler to do all the dirty low-level work for us.</p>
