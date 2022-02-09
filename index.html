@@ -5174,22 +5174,22 @@ Bearer
 <p>This simple line of code introduces a few important topics.</p>
 
 <ol>
-<li><code>fun</code> is the function keyword, meaning everything after this defines a function</li>
-<li><code>hello_world</code> is the function name</li>
-<li><code>=&gt;</code> is the lambda operator and expects some kind of expression to follow</li>
-<li><code>&quot;Hello World&quot;</code> is a string literal while is the return value also says the <code>hello_world</code> function returns a string type</li>
+<li><code>fun</code> is the function keyword, meaning everything after this defines a function.</li>
+<li><code>hello_world</code> is the function name.</li>
+<li><code>=&gt;</code> is the lambda operator and expects some kind of expression to follow.</li>
+<li><code>&quot;Hello World&quot;</code> is a string literal and also the function&#39;s return value, which means that the hello_world function returns the string type.</li>
 </ol>
 
-<p>Every function is parameterless, so invoking a function is as easy as calling it directly <code>hello_world</code> would print <code>&quot;Hello World&quot;</code> in an interpreter. Also you may have observed that there was no function ending symbol, BML does not need to make use of line endings or semi colons. So new lines are not significant and any formatting is provided for readibility sakes.</p>
+<p>Every function is parameterless, so invoking a function is as easy as calling it directly. <code>hello_world</code> would print <code>&quot;Hello World&quot;</code> in an interpreter. Also you may have observed that there was no function ending symbol, BML does not need to make use of line endings or semi colons. So new lines are not significant and any formatting is provided for readability sake.</p>
 
 <h2 id='2-function-names'>2 Function Names</h2>
 
-<p>In the hello world example, our function was named <code>hello_world</code>. BML supports custom named functions which can be recalled later when composing other functions. BML also has a host of reserved function keywords, which is used to communicate product information! I won&#39;t list all the reserved keywords, they can be found the specification document, however if you wanted to communicate an interest rate table from a product sheet you would simply define a function for interest rate like so</p>
+<p>In the hello world example, our function was named <code>hello_world</code>. BML supports custom named functions which can be recalled later when composing other functions. BML also has a host of reserved function keywords, which are used to communicate product information. I won&#39;t list all the reserved keywords, they can be found the specification document, however if you wanted to communicate an interest rate table from a product sheet you would simply define a function for interest rate like so</p>
 
 <p><code>fun InterestRate =&gt; ...</code></p>
 
 <h2 id='3-tables'>3 Tables</h2><h3 id='3-1-introduction'>3.1 Introduction</h3>
-<p>Tables are the fundamental building block of BML. Tables are a language construct which are meant to merge switch expressions with traditionally found in a banking product sheet. The following code introduces a large chunk functionality.</p>
+<p>Tables are the fundamental building block of BML. Tables are a language construct which are meant to merge switch expressions with tables traditionally found in a banking product sheet. The following code introduces a large chunk functionality.</p>
 <div class="highlight"><pre class="highlight plaintext"><code>fun LoanAmount =&gt;
   table CreditScore
   | in (720, 850] =&gt; 75000
@@ -5218,11 +5218,11 @@ Bearer
   | in (600, 720], &lt;= 60 =&gt; 6.3
   | &lt;= 599, true =&gt; 7.0
 </code></pre></div>
-<p>So, we&#39;ve introduced a couple of things, multiple table parameters <code>table CreditScore, LoanTerm</code>, binary comparison operators <code>&gt;= 720</code>, and a boolean literal <code>true</code>. </p>
+<p>So, we&#39;ve introduced a couple of things, multiple table parameters <code>table CreditScore, LoanTerm</code>, unary comparison operators <code>&gt;= 720</code>, and a boolean literal <code>true</code>. </p>
 
 <p>This table is more representative of a traditional 2-dimensional table with columns and rows, but BML supports tables in 10 dimensions, meaning you can supply 10 parameters to a table if you so choose. Each table branch must have the same number of expressions as table parameters. Additionally, the parameters are applied in order, so the branch <code>| &gt;= 720, &gt; 72</code> gets converted to <code>CreditScore &gt;= 720 and LoanTerm &gt; 72</code>. I just introduced another important keyword <code>and</code>. <code>and</code> is the boolean logical AND. Each branch expression must be true for the branch to evalute to true.</p>
 
-<p>Binary comparison operators are just syntactic sugar for a comparison expression and are only valid in the context of a table branch.</p>
+<p>Unary comparison operators in a table branch are just syntactic sugar for a comparison expression and are only valid in the context of a table branch.</p>
 
 <p>Finally, <code>true</code>, as seen in the last branch, is a literal value so that branch becomes, <code>CreditScore &lt;= 599 and true</code>, which means anybody, regardless of loan term with a credit score less than or equal to 599 qualifies for a 7% interest rate.</p>
 <h2 id='4-type-system'>4 Type System</h2>
@@ -5263,7 +5263,7 @@ Bearer
 
 <h2 id='7-type-coercion'>7 Type Coercion</h2>
 
-<p>Banking Meta Language supports coercion in the direction of an <code>integer</code> to a <code>floating point</code> and will do so when determining compatible types, e.g., either doing comparison or determining the return type of conditional expression.</p>
+<p>Banking Meta Language supports coercion in the direction of an <code>integer</code> to a <code>floating point</code> and will do so when determining compatible types, e.g., either doing a comparison or determining the return type of a conditional expression.</p>
 
 <h2 id='8-underwriting-guidelines-rules'>8 Underwriting Guidelines/Rules</h2>
 
@@ -5278,11 +5278,11 @@ Bearer
 </code></pre></div>
 
 <ol>
-<li><code>rule</code> is the rule keyword, meaning everything after this defines a rule</li>
-<li><code>deny</code> is the rule type keyword, this rule is a deny rule</li>
-<li><code>&quot;Reject this loan if credit score is negative!&quot;</code> is the rule name, the rule name is a string literal and acts as a user facing message when the rule evaluates to true</li>
-<li><code>=&gt;</code> lambda operator, expects an expression to follow</li>
-<li><code>CreditScore &lt; 0</code> is an expression which when evaluated returns a boolean</li>
+<li><code>rule</code> is the rule keyword, meaning everything after this defines a rule.</li>
+<li><code>deny</code> is the rule type keyword, this rule is a deny rule.</li>
+<li><code>&quot;Reject this loan if credit score is negative!&quot;</code> is the rule name, the rule name is a string literal and acts as a user facing message when the rule evaluates to true.</li>
+<li><code>=&gt;</code> lambda operator, expects an expression to follow.</li>
+<li><code>CreditScore &lt; 0</code> is an expression which when evaluated returns a boolean.</li>
 </ol>
 
 <p>So, if <code>CreditScore</code> is equal to -10 then the loan is denied! If the <code>CreditScore</code> is 100 then for the purposes of this rule the loan can continue processing. This does not indicate that the loan is approved, however.</p>
@@ -5300,10 +5300,10 @@ Bearer
 </code></pre></div>
 
 <ol>
-<li><code>rule</code> again the rule keyword</li>
-<li><code>adjust</code> is the rule type keyword, this rule is an adjustment rule</li>
-<li><code>InterestRate</code> a keyword which specifies which loan property is being adjusted</li>
-<li><code>=&gt;</code> lambda operator, expects an expression to follow</li>
+<li><code>rule</code> again the rule keyword.</li>
+<li><code>adjust</code> is the rule type keyword, this rule is an adjustment rule.</li>
+<li><code>InterestRate</code> a keyword which specifies which loan property is being adjusted.</li>
+<li><code>=&gt;</code> lambda operator, expects an expression to follow.</li>
 <li><code>LoanTerm &gt; 100 ? .5 : 0</code> finally the rule expression.</li>
 </ol>
 
@@ -5365,8 +5365,8 @@ rule deny "Only those with great credit can borrow 100K+" =&gt;
 <td>Matches A and then B</td>
 </tr>
 <tr>
-<td>A \</td>
-<td>B</td>
+<td>A &#124; B</td>
+<td>Matches A or B, but not both</td>
 </tr>
 <tr>
 <td>[ char - char ]</td>
@@ -5503,7 +5503,7 @@ rule deny "Only those with great credit can borrow 100K+" =&gt;
 </tr>
 <tr>
 <td>Pipe</td>
-<td>\</td>
+<td>&#124;</td>
 </tr>
 <tr>
 <td>Comma</td>
@@ -5750,7 +5750,7 @@ table CreditScore, VehicleAge
 
 <h3 id='6-1-coercion'>6.1 Coercion</h3>
 
-<p>Banking Meta Language supports coercion in the direction of an <code>integer</code> to a <code>floating point</code> and will do so when determing compatible types, e.g. either doing comparison or determing the return type of conditional expression.</p>
+<p>Banking Meta Language supports coercion in the direction of an <code>integer</code> to a <code>floating point</code> and will do so when determining compatible types, e.g., either doing a comparison or determining the return type of a conditional expression.</p>
 
 <h3 id='6-2-functions-semantic-rules'>6.2 Functions Semantic Rules</h3>
 

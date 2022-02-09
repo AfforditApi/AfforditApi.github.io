@@ -46,8 +46,8 @@ rule deny "Only those with great credit can borrow 100K+" =&gt;
 <td>Matches A and then B</td>
 </tr>
 <tr>
-<td>A \</td>
-<td>B</td>
+<td>A &#124; B</td>
+<td>Matches A or B, but not both</td>
 </tr>
 <tr>
 <td>[ char - char ]</td>
@@ -174,7 +174,7 @@ rule deny "Only those with great credit can borrow 100K+" =&gt;
 </tr>
 <tr>
 <td>Pipe</td>
-<td>\</td>
+<td>&#124;</td>
 </tr>
 <tr>
 <td>Comma</td>
@@ -387,7 +387,7 @@ table CreditScore, VehicleAge
 
 <p>The language grammar and parser do a pretty good job defining the language rules and enforcing the language rules respectively. However there are several rules which require a semantic analysis pass. A note on scoping, Banking Meta Language only has a global scope.</p>
 <h3 id='6-1-coercion'>6.1 Coercion</h3>
-<p>Banking Meta Language supports coercion in the direction of an <code>integer</code> to a <code>floating point</code> and will do so when determing compatible types, e.g. either doing comparison or determing the return type of conditional expression.</p>
+<p>Banking Meta Language supports coercion in the direction of an <code>integer</code> to a <code>floating point</code> and will do so when determining compatible types, e.g., either doing a comparison or determining the return type of a conditional expression.</p>
 <h3 id='6-2-functions-semantic-rules'>6.2 Functions Semantic Rules</h3>
 <ul>
 <li>Function identifiers must be unique.</li>
