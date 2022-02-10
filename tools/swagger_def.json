@@ -7,77 +7,11 @@
   },
   "paths": {
     "/Application": {
-      "post": {
-        "tags": [
-          "Application"
-        ],
-        "summary": "Creates a new application.",
-        "requestBody": {
-          "description": "Application to create",
-          "content": {
-            "application/json-patch+json": {
-              "schema": {
-                "$ref": "#/components/schemas/Application"
-              }
-            },
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Application"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Application"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/Application"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Application was created successfully.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Application was improperly formatted.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/Application/{key}": {
       "put": {
         "tags": [
           "Application"
         ],
-        "summary": "Updates the details for an already existing application matching the application's\r\nthird party key.",
-        "parameters": [
-          {
-            "name": "key",
-            "in": "path",
-            "description": "The third party key for the application to update.",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "summary": "Updates or creates an application based on the application's third party key.",
         "requestBody": {
           "description": "",
           "content": {
@@ -115,17 +49,7 @@
             }
           },
           "400": {
-            "description": "Application was improperly formatted.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "No application matching key was found.",
+            "description": "Application was improperly formatted or was confirmed.",
             "content": {
               "application/json": {
                 "schema": {
@@ -632,8 +556,7 @@
           },
           "dateOfBirth": {
             "type": "string",
-            "description": "The date of the birth of the applicant. This date is expected to be in UTC format.",
-            "format": "date-time",
+            "description": "The date of the birth of the applicant.\r\n<br>\r\nThis date is expected to be a <see href=\"https://en.wikipedia.org/wiki/ISO_8601#Calendar_dates\">ISO-8601 Calendar Date</see>.\r\n",
             "nullable": true
           },
           "currentAddress": {
@@ -689,8 +612,7 @@
           },
           "submitDate": {
             "type": "string",
-            "description": "The date which the Application has been submitted in your internal system. This date\r\nis expected to be in UTC format.",
-            "format": "date-time",
+            "description": "The date which the Application has been submitted in your internal system.\r\n<br>\r\nThis date is expected to be a <see href=\"https://en.wikipedia.org/wiki/ISO_8601#Calendar_dates\">ISO-8601 Calendar Date</see>.\r\n",
             "nullable": true
           },
           "requestedLoan": {
@@ -717,8 +639,7 @@
           },
           "originationDate": {
             "type": "string",
-            "description": "The date which the asset was originated. This date is expected to be in UTC format.",
-            "format": "date-time",
+            "description": "The date which the asset was originated.\r\n<br>\r\nThis date is expected to be a <see href=\"https://en.wikipedia.org/wiki/ISO_8601#Calendar_dates\">ISO-8601 Calendar Date</see>.\r\n",
             "nullable": true
           },
           "rateOfReturn": {
@@ -736,6 +657,7 @@
       },
       "AssetType": {
         "enum": [
+          "Other",
           "Checking",
           "Savings",
           "HomeEquity",
@@ -751,7 +673,6 @@
           "MutualFunds",
           "SecuredBorrowerFunds",
           "NetSaleProceeds",
-          "Other",
           "DownPayment"
         ],
         "type": "string"
@@ -830,8 +751,7 @@
           },
           "dateOpened": {
             "type": "string",
-            "description": "The date which this debt instrument was opened. This date is expected to be in UTC format.",
-            "format": "date-time",
+            "description": "The date which this debt instrument was opened.\r\n<br>\r\nThis date is expected to be a <see href=\"https://en.wikipedia.org/wiki/ISO_8601#Calendar_dates\">ISO-8601 Calendar Date</see>.\r\n",
             "nullable": true
           },
           "monthsReviewed": {
@@ -852,7 +772,7 @@
           },
           "paymentsPerYear": {
             "type": "integer",
-            "description": "Conditionally required. The number of payments in a year. This value if not provided\r\nwill be assumed to be 12, meaning one payment made each month. For student loans which\r\namortize daily the value should be 365",
+            "description": "Conditionally required. The number of payments in a year. If this value is not provided\r\nit will be assumed to be 12, meaning one payment made each month. For student loans,\r\nwhich amortize daily, the value should be 365.",
             "format": "int32",
             "nullable": true
           },
@@ -876,7 +796,8 @@
             "$ref": "#/components/schemas/Currency"
           }
         },
-        "additionalProperties": false
+        "additionalProperties": false,
+        "description": "A debt instrument is a collection of properties which comprise any trade line which\r\nmust be repaid in some manner to a lender."
       },
       "EmploymentInfo": {
         "type": "object",
@@ -991,6 +912,7 @@
       },
       "LiabilityType": {
         "enum": [
+          "Other",
           "Mortgage",
           "Automobile",
           "Motorcycle",
@@ -1001,8 +923,7 @@
           "PersonalLoan",
           "Student",
           "HELOC",
-          "HELOAN",
-          "Other"
+          "HELOAN"
         ],
         "type": "string"
       },
