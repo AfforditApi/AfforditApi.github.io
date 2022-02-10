@@ -1,5 +1,5 @@
 <h1 id='bml-quickstart'>BML Quickstart</h1><h2 id='1-hello-world'>1 Hello World</h2>
-<p>Banking Meta Language is a fully functional language, so everything is a function and every function a composition of expressions! BML is also strongly typed, but implicitly typed, so while every function has a type associated to it that association is being determined by the compiler. Without further ado hello, hello world,</p>
+<p>Banking Meta Language (BML) is a fully functional language, so everything is a function and every function a composition of expressions! BML is strongly typed, but implicitly typed, so while every function has a type associated to it that association is being determined by the compiler. Without further ado hello, hello world,</p>
 
 <p><code>fun hello_world =&gt; &quot;Hello World&quot;</code></p>
 
@@ -12,13 +12,13 @@
 <li><code>&quot;Hello World&quot;</code> is a string literal and also the function&#39;s return value, which means that the hello_world function returns the string type.</li>
 </ol>
 
-<p>Every function is parameterless, so invoking a function is as easy as calling it directly. <code>hello_world</code> would print <code>&quot;Hello World&quot;</code> in an interpreter. Also you may have observed that there was no function ending symbol, BML does not need to make use of line endings or semi colons. So new lines are not significant and any formatting is provided for readability sake.</p>
+<p>Every function is parameterless, so invoking a function is as easy as calling it directly. <code>hello_world</code> would print <code>&quot;Hello World&quot;</code> in an interpreter. Also you may have observed that there was no function ending symbol, BML does not need to make use of line endings or semi colons. So new lines are not significant and any formatting is provided for readability.</p>
 <h2 id='2-function-names'>2 Function Names</h2>
-<p>In the hello world example, our function was named <code>hello_world</code>. BML supports custom named functions which can be recalled later when composing other functions. BML also has a host of reserved function keywords, which are used to communicate product information. I won&#39;t list all the reserved keywords, they can be found the specification document, however if you wanted to communicate an interest rate table from a product sheet you would simply define a function for interest rate like so</p>
+<p>In the hello world example, our function was named <code>hello_world</code>. BML supports custom named functions which can be recalled later when composing other functions. BML also has a host of reserved function keywords, which are used to communicate product information. Reserved keywords can be found in the specification document. If you wanted to communicate an interest rate table from a product sheet you would simply define a function for interest rate like so</p>
 
 <p><code>fun InterestRate =&gt; ...</code></p>
 <h2 id='3-tables'>3 Tables</h2><h3 id='3-1-introduction'>3.1 Introduction</h3>
-<p>Tables are the fundamental building block of BML. Tables are a language construct which are meant to merge switch expressions with tables traditionally found in a banking product sheet. The following code introduces a large chunk functionality.</p>
+<p>Tables are the fundamental building block of BML. Tables are a language construct which are meant to merge switch statements found in most programming languages with tables traditionally found in a banking product sheet. The following code introduces a large chunk of functionality.</p>
 <div class="highlight"><pre class="highlight plaintext"><code>fun LoanAmount =&gt;
   table CreditScore
   | in (720, 850] =&gt; 75000
@@ -31,7 +31,7 @@
 <li><code>table</code> a table ahead! </li>
 <li><code>CreditScore</code> following the table keyword are the table&#39;s parameters. So, this table uses the credit score of the applicant to find a loan amount.</li>
 <li><code>| in (720, 850] =&gt; 75000</code> is a branch of the table, the branch starts with the pipe operator <code>|</code>.</li>
-<li><code>in (720, 850]</code> is an interval operation. This is converted to <code>CreditScore in (720, 850]</code>. This is some syntactic sugar provided by the language.</li>
+<li><code>in (720, 850]</code> is an interval operation. Read more about intervals <a href="#4-type-system">here</a>. This is converted to <code>CreditScore in (720, 850]</code>. This is some syntactic sugar provided by the language.</li>
 <li><code>=&gt; 75000</code> then we have the expression which is returned if the branch arm evaluates to true.</li>
 <li>The same follows for the other two branches.</li>
 <li><code>_ =&gt; 0</code> this is the exhaustive branch. If no branch is found to be true, then you can provide a default value. The exhaustive branch is not required, however.</li>
@@ -49,11 +49,11 @@
 </code></pre></div>
 <p>So, we&#39;ve introduced a couple of things, multiple table parameters <code>table CreditScore, LoanTerm</code>, unary comparison operators <code>&gt;= 720</code>, and a boolean literal <code>true</code>. </p>
 
-<p>This table is more representative of a traditional 2-dimensional table with columns and rows, but BML supports tables in 10 dimensions, meaning you can supply 10 parameters to a table if you so choose. Each table branch must have the same number of expressions as table parameters. Additionally, the parameters are applied in order, so the branch <code>| &gt;= 720, &gt; 72</code> gets converted to <code>CreditScore &gt;= 720 and LoanTerm &gt; 72</code>. I just introduced another important keyword <code>and</code>. <code>and</code> is the boolean logical AND. Each branch expression must be true for the branch to evalute to true.</p>
+<p>This table is more representative of a traditional 2-dimensional table with columns and rows, but BML supports tables in 10 dimensions, meaning you can supply 10 parameters to a table if you so choose. Each table branch must have the same number of expressions as table parameters. Additionally, the parameters are applied in order, so the branch <code>| &gt;= 720, &gt; 72</code> gets converted to <code>CreditScore &gt;= 720 and LoanTerm &gt; 72</code>. I just introduced another important keyword <code>and</code>. <code>and</code> is the boolean logical AND. Each branch expression must be true for the branch to evaluate to true.</p>
 
 <p>Unary comparison operators in a table branch are just syntactic sugar for a comparison expression and are only valid in the context of a table branch.</p>
 
-<p>Finally, <code>true</code>, as seen in the last branch, is a literal value so that branch becomes, <code>CreditScore &lt;= 599 and true</code>, which means anybody, regardless of loan term with a credit score less than or equal to 599 qualifies for a 7% interest rate.</p>
+<p>Finally, <code>true</code>, as seen in the last branch, is a literal value. The final branch becomes <code>CreditScore &lt;= 599 and true</code>. This means that an applicant with a credit score less than or equal to 599 and any loan term qualifies for a 7.0% interest rate.</p>
 <h2 id='4-type-system'>4 Type System</h2>
 <p>BML has only a few primitive types, <code>integer</code>, <code>floating point</code>, <code>string</code>, and <code>bool</code>, and has the compound type <code>interval</code> which is an aggregation of base types.</p>
 
@@ -65,9 +65,9 @@
 
 <p><code>bool</code> is a boolean value either <code>true</code> or <code>false</code> and is the result of any comparison or equality operation.</p>
 
-<p><code>interval</code> is anything which takes the form of an opening character <code>[</code> or <code>(</code> some <code>value</code>, a <code>comma</code> another <code>value</code> and then a closing character <code>)</code> or <code>]</code>. Some examples, <code>[100, 300]</code>, <code>(-123, 4.3]</code>. The first value must be smaller than the second value. The bracket <code>[</code>, <code>]</code> means that the that number is included in the range. The parenthesis <code>(</code>, <code>)</code> means that the number is excluded in the range.</p>
+<p><code>interval</code> is anything which takes the form of an opening character <code>[</code> or <code>(</code> some <code>value</code>, a <code>comma</code> another <code>value</code> and then a closing character <code>)</code> or <code>]</code>. Some examples, <code>[100, 300]</code>, <code>(-123, 4.3]</code>. The first value must be smaller than the second value. The bracket <code>[</code>, <code>]</code> means that the number is included in the range. The parenthesis <code>(</code>, <code>)</code> means that the number is excluded in the range.</p>
 <h2 id='5-comparison-operators'>5 Comparison Operators</h2>
-<p>BML supports the comparison operators <code>&gt;</code>, <code>&gt;=</code>, <code>&lt;</code>, <code>&gt;=</code>, <code>in</code>, and <code>out</code>. Hopefully the first four are already familiar to you. <code>in</code> and <code>out</code> are exclusive to checking whether or not a number is <code>in</code> and interval or <code>out</code> of an interval. For example, </p>
+<p>BML supports the comparison operators <code>&gt;</code>, <code>&gt;=</code>, <code>&lt;</code>, <code>&lt;=</code>, <code>in</code>, and <code>out</code>. Hopefully the first four are already familiar to you. <code>in</code> and <code>out</code> are exclusive to checking whether or not a number is <code>in</code> an interval or <code>out</code> of an interval. As an example, </p>
 
 <p><code>1 in [0, 100] // true</code></p>
 
@@ -75,11 +75,11 @@
 
 <p><code>4 out [1, 2] // true</code></p>
 
-<p>the <code>in</code> and <code>out</code> operators can also be used to compare two intervals. For example,</p>
+<p>the <code>in</code> and <code>out</code> operators can also be used to compare two intervals. As an example,</p>
 
 <p><code>[100, 120] in (1, 300) // true</code> </p>
 <h2 id='6-equality-operators'>6 Equality Operators</h2>
-<p>BML supports the equality operators <code>==</code> and <code>!=</code>. Any two compatible types can be compared using equality operators. The resulting type is always a <code>bool</code>. For example,</p>
+<p>BML supports the equality operators <code>==</code> and <code>!=</code>. Any two compatible types can be compared using equality operators. The resulting type is always a <code>bool</code>. As an example,</p>
 
 <p><code>1 == 1 // true</code>
 <code>4.1 != 4 // true</code>
@@ -105,14 +105,14 @@
 
 <p>Deny rules always expect a return type of boolean. This indicates whether or not the applicant should be denied for this loan type. When the deny rule evaluates to true, the loan is denied, otherwise the loan can continue processing.</p>
 <h3 id='8-2-adjust-rules'>8.2 Adjust Rules</h3>
-<p>Adjust rules are almost identical to the deny rule but introduce another item. They&#39;re used to perform adjustments to a loan&#39;s properties.</p>
+<p>Adjust rules are syntactically similar to the deny rule but introduce another item. They&#39;re used to perform adjustments to a loan&#39;s properties.</p>
 <div class="highlight"><pre class="highlight plaintext"><code>rule adjust InterestRate "Loans exceeding 100 months should be raised half a point." =&gt;
   LoanTerm &gt; 100 
     ? .5
     : 0
 </code></pre></div>
 <ol>
-<li><code>rule</code> again the rule keyword.</li>
+<li><code>rule</code> is the rule keyword, meaning everything after this defines a rule.</li>
 <li><code>adjust</code> is the rule type keyword, this rule is an adjustment rule.</li>
 <li><code>InterestRate</code> a keyword which specifies which loan property is being adjusted.</li>
 <li><code>=&gt;</code> lambda operator, expects an expression to follow.</li>
@@ -123,4 +123,4 @@
 
 <p>If you want to decrease the interest rate for someone who has an excellent credit score and it&#39;s more convenient than putting it in a table, the consequent would be a negative value like <code>-0.1</code>.</p>
 <h2 id='9-additional-information'>9 Additional Information</h2>
-<p>For more in detail descriptions of the various language constructs, the supporting document <code>Banking Meta Language Specification</code> can be viewed. For any other questions you can reach out to Affordit directly.</p>
+<p>For more detailed descriptions of the various language constructs, the supporting document <code>Banking Meta Language Specification</code> can be viewed. For any other questions you can reach out to Affordit directly.</p>
