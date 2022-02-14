@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.1",
   "info": {
-    "title": "Affordit Loan Insights Portal",
+    "title": "Affordit API",
     "description": "Affordit API for communicating a financial institution's products and applications.",
     "version": "v1"
   },
