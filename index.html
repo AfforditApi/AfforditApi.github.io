@@ -444,7 +444,10 @@
                     <a href="#8-underwriting-guidelines-rules" class="toc-h2 toc-link" data-title="8 Underwriting Guidelines/Rules">8 Underwriting Guidelines/Rules</a>
                   </li>
                   <li>
-                    <a href="#9-additional-information" class="toc-h2 toc-link" data-title="9 Additional Information">9 Additional Information</a>
+                    <a href="#9-full-example" class="toc-h2 toc-link" data-title="9 Full Example">9 Full Example</a>
+                  </li>
+                  <li>
+                    <a href="#10-additional-information" class="toc-h2 toc-link" data-title="10 Additional Information">10 Additional Information</a>
                   </li>
               </ul>
           </li>
@@ -470,10 +473,7 @@
                     <a href="#6-semantic-analysis" class="toc-h2 toc-link" data-title="6 Semantic Analysis">6 Semantic Analysis</a>
                   </li>
                   <li>
-                    <a href="#7-syntactic-grammar-ebnf" class="toc-h2 toc-link" data-title="7 Syntactic Grammar (EBNF)">7 Syntactic Grammar (EBNF)</a>
-                  </li>
-                  <li>
-                    <a href="#8-resources" class="toc-h2 toc-link" data-title="8 Resources">8 Resources</a>
+                    <a href="#7-resources" class="toc-h2 toc-link" data-title="7 Resources">7 Resources</a>
                   </li>
               </ul>
           </li>
@@ -4798,7 +4798,7 @@ must be repaid in some manner to a lender.</p>
 <p>Finally, <code>true</code>, as seen in the last branch, is a literal value. The final branch becomes <code>CreditScore &lt;= 599 and true</code>. This means that an applicant with a credit score less than or equal to 599 and any loan term qualifies for a 7.0% interest rate.</p>
 <h2 id='4-type-system'>4 Type System</h2>
 
-<p>BML has only a few primitive types, <code>integer</code>, <code>floating point</code>, <code>string</code>, and <code>bool</code>, and has the compound type <code>interval</code> which is an aggregation of base types.</p>
+<p>BML has only a few primitive types, <code>integer</code>, <code>floating point</code>, <code>string</code>, and <code>bool</code>, and has the compound types <code>interval</code> and <code>progression</code> which are aggregations of base types.</p>
 
 <p><code>integer</code> is any whole number between -2,147,483,648 to 2,147,483,647. e.g., <code>12</code></p>
 
@@ -4809,6 +4809,16 @@ must be repaid in some manner to a lender.</p>
 <p><code>bool</code> is a boolean value either <code>true</code> or <code>false</code> and is the result of any comparison or equality operation.</p>
 
 <p><code>interval</code> is anything which takes the form of an opening character <code>[</code> or <code>(</code> some <code>value</code>, a <code>comma</code> another <code>value</code> and then a closing character <code>)</code> or <code>]</code>. Some examples, <code>[100, 300]</code>, <code>(-123, 4.3]</code>. The first value must be smaller than the second value. The bracket <code>[</code>, <code>]</code> means that the number is included in the range. The parenthesis <code>(</code>, <code>)</code> means that the number is excluded in the range.</p>
+
+<p><code>progression</code> is anything which takes the form <code>%</code> <code>integer</code> <code>interval</code>. Some examples, <code>%12 [12, 84]</code>, <code>%2 [4, 400)</code>. The integer must be larger than zero, and the interval must only contain <code>integer</code> types. The interval also must start with an inclusive bound. A progression allows for an expansion of the values within it. The <code>integer</code> following the <code>%</code> is the common difference and beginning with the interval start is summed by the common difference until the end of the interval is reached.
+* <code>%12 [12, 84]</code> Starting with 12 and then incrementing by 12 until the end of the interval is reached
+  * <code>12</code>
+  * <code>12 + 12 = 24</code>
+  * <code>24 + 12 = 36</code>
+  * ...
+  * <code>72 + 12 = 84</code> 84 is inclusive so it is included
+  * <code>84 + 12 = 96</code> which is out of the interval bounds and expansion stops
+  * The expanded progression contains the values <code>12, 24, 36, 48, 60, 72, 84</code></p>
 
 <h2 id='5-comparison-operators'>5 Comparison Operators</h2>
 
@@ -4834,7 +4844,10 @@ must be repaid in some manner to a lender.</p>
 
 <h2 id='7-type-coercion'>7 Type Coercion</h2>
 
-<p>Banking Meta Language supports coercion in the direction of an <code>integer</code> to a <code>floating point</code> and will do so when determining compatible types, e.g., either doing a comparison or determining the return type of a conditional expression.</p>
+<p>Banking Meta Language supports coercion in the direction of an <code>integer</code> to a <code>floating point</code> and will do so when determining compatible types, e.g., either doing a comparison or determining the return type of a conditional expression. 
+BML also supports the coercion in the direction of <code>integer</code> to <code>progression</code> and <code>interval</code> to <code>progression</code>. 
+* An <code>integer</code> when coerced to a progression represents a single value. E.g. <code>4</code> becomes <code>%1 [4, 5)</code>. 
+* An <code>interval</code> can only be coerced when the start of the <code>interval</code> is inclusive, <code>[</code>, and both expressions in the interval are <code>integers</code>. An <code>interval</code> when coerced is given the default common difference of <code>1</code>. E.g. <code>[4, 20)</code> becomes <code>%1 [4, 20)</code>.</p>
 
 <h2 id='8-underwriting-guidelines-rules'>8 Underwriting Guidelines/Rules</h2>
 
@@ -4862,7 +4875,7 @@ must be repaid in some manner to a lender.</p>
 
 <h3 id='8-2-adjust-rules'>8.2 Adjust Rules</h3>
 
-<p>Adjust rules are syntactically similar to the deny rule but introduce another item. They&#39;re used to perform adjustments to a loan&#39;s properties.</p>
+<p>Adjust rules are syntactically similar the deny rule but introduce another item. They&#39;re used to perform adjustments to a loan&#39;s properties.</p>
 
 <div class="highlight"><pre class="highlight plaintext"><code>rule adjust InterestRate "Loans exceeding 100 months should be raised half a point." =&gt;
   LoanTerm &gt; 100 
@@ -4882,16 +4895,62 @@ must be repaid in some manner to a lender.</p>
 
 <p>If you want to decrease the interest rate for someone who has an excellent credit score and it&#39;s more convenient than putting it in a table, the consequent would be a negative value like <code>-0.1</code>.</p>
 
-<h2 id='9-additional-information'>9 Additional Information</h2>
+<h2 id='9-full-example'>9 Full Example</h2><div class="highlight"><pre class="highlight plaintext"><code>fun MaxLoanToValuePercent =&gt;
+  table CreditScore
+  | in [659, 669] =&gt; 70
+  | in [670, 739] =&gt; 70
+  | in [740, 850] =&gt; 90
+
+fun MaxDebtToIncomePercent =&gt;
+  table CreditScore
+  | in [659, 669] =&gt; 50
+  | in [670, 739] =&gt; 55
+  | in [740, 850] =&gt; 60
+
+fun MaxPaymentToIncomePercent =&gt;
+  table CreditScore
+  | in [659, 669] =&gt; 200
+  | in [670, 739] =&gt; 210
+  | in [740, 850] =&gt; 220
+
+fun MaxLoanAmount =&gt;
+  table CreditScore
+  | &gt; 800 =&gt; 350000
+  |  in [659, 800] =&gt; 300000
+
+fun AllowableLoanTerms =&gt;
+  table LoanAmount, CreditScore
+  | &gt; 5000, in [659, 850] =&gt; %12 [0, 60]
+
+fun InterestRate =&gt;
+  table CreditScore, LoanTerm
+  | in [740, 850], in [12, 60] =&gt; 3.1
+  | in [700, 739], in [24, 60] =&gt; 4.1
+  | in [670, 699], in [36, 60] =&gt; 5.1
+  | in [659, 669], in [48, 60] =&gt; 6.1
+
+rule adjust InterestRateAdjustment "Rate Adjustment - credit score between 700 - 850 and LTV &gt;= 80% and &lt;= 90%" =&gt;
+  CreditScore in [700, 850] and LoanToValuePercent in [80, 90]
+  ? 2.0
+  : 0
+
+rule deny "The applicant's credit score is less than or equal to 739, and the loan term equals 60 months. The annual unsecured debt ratio must be less than 35%" =&gt;
+  CreditScore &lt;= 739 and LoanTerm == 60 and TotalUnsecuredDebt &gt; 35
+
+rule deny "There are less than 2 open tradelines or the oldest tradeline is less than or equal to 24 months old" =&gt;
+  LiabilityCount &lt; 2 and OldestLiabilityInMonths &lt;= 24
+</code></pre></div><h2 id='10-additional-information'>10 Additional Information</h2>
 
 <p>For more detailed descriptions of the various language constructs, the supporting document <code>Banking Meta Language Specification</code> can be viewed. For any other questions you can reach out to Affordit directly.</p>
 
 <p><h1 id='bml-specification'>BML Specification</h1><h2 id='1-introduction'>1 Introduction</h2>
 <p>The Banking Meta Language is a functional, non-Turing complete, strongly typed language used to represent a financial institution’s product catalog which includes dynamic rate adjustments and explicit loan denial.</p></p>
 
-<p>Once Banking Meta Language source code has been parsed and been determined to be valid it must be executed. We leverage existing tools in the .NET ecosystem, for example the System.Linq.Expressions namespace to translate our parsed expressions into .NET domain expressions which can then be compiled and executed all at run time. This provides us with multiple benefits. the largest being we can leverage the existing C# compiler to do all the dirty low-level work for us.</p>
+<p>The language is intentionally non-Turing complete to avoid the halting problem.</p>
 
-<p>An example of some Banking Meta Language code, hopefully it&#39;s easy to grok.</p>
+<p>Once Banking Meta Language source code has been parsed and determined to be valid, it must be executed. We leverage existing tools in the .NET ecosystem, for example the Roslyn scripting API, to translate our parsed expressions into C# code which can then be compiled and executed all at run time. This provides us with multiple benefits. the largest being we can leverage the existing C# compiler to do all the dirty low-level work for us.</p>
+
+<p>An example of some Banking Meta Language code (hopefully it&#39;s easy to grok).</p>
 
 <div class="highlight"><pre class="highlight plaintext"><code>fun LoanAmount =&gt;
   table CreditScore
@@ -4976,7 +5035,7 @@ rule deny "Only those with great credit can borrow 100K+" =&gt;
 
 <h3 id='3-2-comments'>3.2 Comments</h3>
 
-<p>Banking Meta Language supports simple comments of the form &#39;//&#39;. The lexer when encountering this sequence of characters will consume all the tokens until the next line is reached, ignoring the comment.</p>
+<p>Banking Meta Language supports simple single line comments of the form &#39;//&#39;. The lexer when encountering this sequence of characters will consume all the tokens until the next line is reached, ignoring the comment.</p>
 
 <h3 id='3-3-keywords'>3.3 Keywords</h3>
 
@@ -5100,6 +5159,10 @@ rule deny "Only those with great credit can borrow 100K+" =&gt;
 <td>Discard</td>
 <td>_</td>
 </tr>
+<tr>
+<td>Percent</td>
+<td>%</td>
+</tr>
 </tbody></table>
 
 <h3 id='3-5-one-or-two-character-tokens'>3.5 One or Two Character Tokens</h3>
@@ -5154,11 +5217,11 @@ rule deny "Only those with great credit can borrow 100K+" =&gt;
 </thead><tbody>
 <tr>
 <td>Identifier</td>
-<td>Any sequence of alpha numeric characters which start with an alpha character including underscore &#39;_&#39; and which does match a defined keyword.</td>
+<td>[a-zA-Z] [_a-zA-Z0-9]*</td>
 </tr>
 <tr>
 <td>String</td>
-<td>&#39;&quot;&#39; &#39;<any character except ">&#39;* &#39;&quot;&#39;</td>
+<td>&#39;&quot;&#39; [^&quot;]* &#39;&quot;&#39;</td>
 </tr>
 <tr>
 <td>Integer</td>
@@ -5186,127 +5249,102 @@ rule deny "Only those with great credit can borrow 100K+" =&gt;
 </tr>
 </tbody></table>
 
-<h3 id='3-8-domain-keywords'>3.8 Domain Keywords</h3>
+<h3 id='3-8-domain-identifiers'>3.8 Domain Identifiers</h3>
 
-<p>Domain keywords are a special type of keyword which when used as an expression signal to the expression translation layer that a substitution with a domain object property is required here. Domain keywords when used as the identifier in a function signal to the expression translation layer that the function will return a value for that domain property. </p>
+<p>Domain identifiers are special function identifiers that correspond either to functions which provide input or which can be defined to provide output. Input functions fall into two categories: those that can be referenced in an <code>adjust</code> rule and those that cannot. Output functions also fall into two categories: those that must be defined and those which are optional. Optional output functions have default values, which are specified below.</p>
 
-<p>As an example, <code>fun LoanAmount =&gt; ...</code> says this function defines a product loan amount, while <code>table CreditScore ...</code> says use the domain object credit score property value as the table tuple expression. More specific behavior regarding domain keywords and functions can be found in the function expression section.</p>
+<p>As an example, <code>fun InterestRate =&gt; 2.75</code> defines the required output function <code>InterestRate</code>,while <code>CreditScore &gt; 750 ? -0.15 : 0</code> calls the non-adjustable input function <code>CreditScore</code>. More specific behavior regarding domain keywords and functions can be found in the function expressioni section.</p>
 
-<p><div class="highlight"><pre class="highlight plaintext"><code>domain keywords
-  ::= &#39;CreditScore&#39;                  | &#39;LoanAmount&#39;                   | &#39;LoanTerm&#39;<br>
-    | &#39;InterestRate&#39;                 | &#39;LoanToValuePercent&#39;           | &#39;DebtToIncomePercent&#39;<br>
-    | &#39;UnsecuredDebtToIncomePercent&#39; | &#39;PaymentToIncomePercent&#39;       | &#39;MinimumMonthlyPayment&#39;<br>
-    | &#39;Mileage&#39;                      | &#39;VehicleAge&#39;                   | &#39;WatercraftLength&#39; 
-    | &#39;PromotionalInterestRate&#39;      | &#39;PromotionalDuration&#39;          | &#39;PrimeRateModifies&#39;<br>
-    | &#39;PrimeRateType&#39;                | &#39;DrawPeriodInMonths&#39;           | &#39;MaxLienPosition&#39;<br>
-    | &#39;LiabilityCount&#39;               | &#39;OldestLiabilityInMonths&#39;      | &#39;GrossMonthlyIncome&#39;<br>
-    | &#39;GrossMonthlyIncomeRatio&#39;      | &#39;TotalUnsecuredDebt&#39;<br>
-    | &#39;TotalUnsecuredDebtInstitutionSpecific&#39;
+<p><div class="highlight"><pre class="highlight plaintext"><code>domain_identifier
+  ::= input identifier             | output identifier
+input_identifier
+  ::= adjustable identifier        | nonadjustable identifier
+output_identifier
+  ::= required_identifier          | optional_identifier
+adjustable_identifier
+  ::= &#39;LoanAmount&#39;                 | &#39;LoanTerm&#39;                     | &#39;InterestRateAdjustment&#39;
+nonadjustable_identifier
+  ::= &#39;CreditScore&#39;                | &#39;LoanToValuePercent&#39;           | &#39;DebtToIncomePercent&#39;<br>
+  | &#39;UnsecuredDebtToIncomePercent&#39; | &#39;PaymentToIncomePercent&#39;       | &#39;Mileage&#39;
+  | &#39;VehicleAge&#39;                   | &#39;WatercraftLength&#39;             | &#39;LiabilityCount&#39;
+  | &#39;OldestLiabilityInMonths&#39;      | &#39;GrossMonthlyIncome&#39;           | &#39;GrossMonthlyIncomeRatio&#39;
+  | &#39;TotalUnsecuredDebt&#39;           | &#39;TotalUnsecuredDebtInstitutionSpecific&#39;
+required_identifier
+  ::= &#39;InterestRate&#39;
+optional_identifier
+  ::= &#39;MinimumMonthlyPayment&#39;      | &#39;PromotionalInterestRate&#39;      | &#39;PromotionalDuration&#39;
+  | &#39;PrimeRateModifies&#39;            | &#39;PrimeRateType&#39;                | &#39;DrawPeriodInMonths&#39;
+  | &#39;MaxLienPosition&#39;              | &#39;CompoundingPeriodsPerYear&#39;    | &#39;AllowableLoanTerms&#39;
+  | &#39;MaxLoanToValuePercent&#39;        | &#39;MaxDebtToIncomePercent&#39;       | &#39;MaxPaymentToIncomePercent&#39;
 </code></pre></div><h2 id='4-expressions'>4 Expressions</h2>
 <p>Expressions are the fundamental building block of Banking Meta Language and are expected to evaluate eventually to either a number, a string, a boolean, a domain keyword, an identifier, or an expression grouping. Almost everything is an expression.</p>
 <h3 id='4-1-interval-expressions'>4.1 Interval Expressions</h3>
-<p>An expression of the form <code>( &#39;[&#39; | &#39;(&#39; ) expression &#39;,&#39; expression ( &#39;]&#39; | &#39;)&#39; )</code> is an interval expression. Interval expressions are used to represent an interval between two numbers where substituting <code>expression</code> from the interval expression form with <em>X1</em> and <em>X2</em>, respectively, <em>X1 &lt; X2</em> must be true. The opening and closing characters represent if the interval is exclusive or inclusive. Using the earlier notation and introducing a number <em>n</em> the following table can be used to determine if <em>n</em> satisfies an interval.</p></p>
-
-<table><thead>
-<tr>
-<th>Expression</th>
-<th></th>
-</tr>
-</thead><tbody>
-<tr>
-<td><em>[ X1,</em></td>
-<td><em>n &gt;= X1</em></td>
-</tr>
-<tr>
-<td><em>( X1,</em></td>
-<td><em>n &gt; X1</em></td>
-</tr>
-<tr>
-<td><em>,X2 ]</em></td>
-<td><em>n &lt;= X2</em></td>
-</tr>
-<tr>
-<td><em>,X2 )</em></td>
-<td><em>n &lt; X2</em></td>
-</tr>
-</tbody></table>
-
+<p>An expression of the form <code>( LeftBracket | LeftParen ) expression Comma expression ( RightBracket | RightParent )</code> is an interval expression. Interval expressions are used to represent an interval between two numbers, as in Mathematics. </p>
 <h4 id='4-1-1-example'>4.1.1 Example</h4>
-
 <p><code>[42, 100)</code>
 <code>(10.1111, 11)</code></p>
-
 <h3 id='4-2-unary-expressions'>4.2 Unary Expressions</h3>
-
-<p>An expression of the form <code>( &#39;!&#39; | &#39;-&#39; | &#39;&gt;&#39; | &#39;&gt;=&#39; | &#39;&lt;&#39; | &#39;&lt;=&#39; | &#39;!=&#39; | &#39;==&#39; | &#39;in&#39; | &#39;out&#39; ) unary | primary</code> is a unary expression. We deviate a bit from the traditional unary operators <code>!</code> and <code>-</code> to also include comparison operators. This change exists to have valid tuple expressions in our table language construct.</p>
-
+<p>An expression of the form <code>( Bang | Minus | Greater | GreaterEqual | Less | LessEqual | BangEqual | EqualEqual | In | Out ) unary | primary</code> is a unary expression. We deviate a bit from the traditional unary operators <code>!</code> and <code>-</code> to also include comparison operators. This change exists to have valid tuple expressions in our table language construct.</p>
 <h3 id='4-3-tuple-expressions'>4.3 Tuple Expressions</h3>
-
-<p>An expression of the form <code>expression ( &#39;,&#39; expression )*</code> is a tuple expression. This allows for any number of expressions to be joined by a comma. A tuple can be expressed as a single expression and will be inferred depending on usage. Banking Meta Language has no support for empty tuples also referred to as the 0-tuple. In the following examples we demonstrate the usage of comparison unary expressions which we&#39;ll build upon further in the table expressions section.</p>
-
+<p>An expression of the form <code>expression ( Comma expression )*</code> is a tuple expression. This allows for any number of expressions to be joined by a comma. A tuple can be expressed as a single expression and will be inferred depending on usage. Banking Meta Language has no support for empty tuples also referred to as the 0-tuple. In the following examples we demonstrate the usage of comparison unary expressions which we&#39;ll build upon further in the table expressions section.</p>
 <h4 id='4-3-1-example'>4.3.1 Example</h4>
-
 <p><code>in [42, 100), out (10.1111, 11), == 10</code>
 <code>1 + 1 &lt; 3</code></p>
+<h3 id='4-4-table-expressions'>4.4 Table Expressions</h3>
+<p>An expression of the form <code>Table tuple ( Pipe tuple Lambda expression )+ ( Discard Lambda expression )?</code> is a table expression. A table expression always begins with the keyword <code>table</code> and is followed by a tuple. This tuple is used by the table statement to determine the required length of each pipe tuple as these must match, and the values which should be supplied to the pipe expression. Because a tuple is required to define the table, tables are effectively n-dimensional.</p></p>
 
-<h3 id='4-4-pipe-expressions'>4.4 Pipe Expressions</h3>
+<p>Continuing along the expression, <code>( Pipe tuple Lambda expression )+</code>, signifies the pattern matching expression and because of <code>+</code> at least one pattern is expected. When expanding the pipe, the tuple must be of the same length as the starting table tuple. Each branch is evaluated in descending order and if a match is found the right-hand side of the lambda token is returned. The first matching branch will be returned and no further branches will be evaluated.</p>
 
-<p>An expression of the form <code>&#39;|&#39; tuple</code> is a pipe expression. The pipe expression is an essential building block of the table expression and is signaled to the parser by the start of the pipe operator. As detailed in the tuple expression section, the single element tuple would be inferred if following the pipe operator.</p>
+<p>The final grammar, <code>( Discard Lambda expression )?</code>, makes the table exhaustive, meaning if no match is found then this is the default branch which will be taken. However, because the exhaustive branch is optional, no branch could match the table arguments. In that case we opt to return a null object, rather than throw an exception like would happen in C#.</p>
 
 <h4 id='4-4-1-example'>4.4.1 Example</h4>
 
-<p><code>| in [42, 100), out (10.1111, 11), == 10</code>
-<code>| 1 + 1 &lt; 3</code></p>
+<p>The following example is table which returns an interval representing thr allowable loan terms when constrained by a borrowers credit score and the age of a vehicle liability.</p>
 
-<h3 id='4-5-table-expressions'>4.5 Table Expressions</h3>
-
-<p>An expression of the form <code>&#39;table&#39; tuple ( pipe &#39;=&gt;&#39; expression )+ ( &#39;_&#39; &#39;=&gt;&#39; expression )?</code> is a table expression. A table expression always begins with the keyword <code>table</code> and is followed by a tuple. This tuple is used by the table statement to determine the required length of each pipe tuple as these must match, and the values which should be supplied to the pipe expression. Because a tuple is required to define the table, tables are effectively n-dimensional.</p>
-
-<p>Continuing along the expression, <code>( pipe &#39;=&gt;&#39; expression )+</code>, signifies the pattern matching expression and because of <code>+</code> at least one pattern is expected. When expanding the pipe, the tuple must be of the same length as the starting table tuple. Each branch is evaluated in descending order and if a match is found the right-hand side of the lambda token is returned. The first matching branch will be returned and no further branches will be evaluated.</p>
-
-<p>The final grammar, <code>( &#39;_&#39; &#39;=&gt;&#39; expression )?</code>, makes the table exhaustive, meaning if no match is found then this is the default branch which will be taken. However, because the exhaustive branch is optional, no branch could match the table arguments. In that case we opt to return a null object, rather than throw an exception like would happen in C#.</p>
-
-<h4 id='4-5-1-example'>4.5.1 Example</h4>
-
-<p>The following example is table which returns an interval representing thr allowable loan terms when constrained by a borrowers credit score and the age of a vehicle liability.
-<code>
-table CreditScore, VehicleAge
+<p><div class="highlight"><pre class="highlight plaintext"><code>table CreditScore, VehicleAge
  | in [0, 659), in [0, 6] =&gt; [12, 24]
  | in [0, 659), in [7, 9] =&gt; [12, 24]
  | in [660, 850], in [0, 6] =&gt; [12, 120]
  | in [660, 850], in [7, 9] =&gt; [12, 96]
  _ =&gt; [12, 12]
-</code></p>
+</code></pre></div><h3 id='4-5-interval-operations'>4.5 Interval Operations</h3>
+<p>An expression of the form <code>expression ( In | Out ) expression</code> is an interval operation. The left-hand side expression must evaluate to either a number or an interval. The right-hand side expression must evaluate to an interval.</p>
+<h3 id='4-6-ternary-expressions'>4.6 Ternary Expressions</h3>
+<p>A ternary expression has the syntax <code>interval_op ( Question interval_op Colon interval_op )?</code>. A ternary expression in BML is very similar to the ternary experessions found in most programming languages. More details are provided in the semantics section below.</p>
+<h3 id='4-7-progression-expressions'>4.7 Progression Expressions</h3>
+<p>A progression expression has the form <code>Percent expression interval</code>. A progression allows you to specify the set of integers in an arithmetic progression that fall within an interval. A progression can be thought of as a list comprehension or a generator function. The expression following the percent is the common difference. Beginning with the interval&#39;s starting value, the common difference is added to it and then each subsequent value until the interval&#39;s final bound is reached.</p>
+<h3 id='4-7-1-example'>4.7.1 Example</h3>
+<p>Looking at the first return progression <code>%12 [36, 84]</code>, this gets expanded to <code>36, 48, 60, 72, 84</code> as these are the numbers starting with 36 which are additions of 12.</p>
+<div class="highlight"><pre class="highlight plaintext"><code>fun AllowableLoanTerms =&gt;
+    table CreditScore
+    | in (720, 850] =&gt; %12 [36, 84]
+    | in (640, 720] =&gt; %12 [36, 60]
+    | in (0, 640) =&gt; 36
+    _ =&gt; 0
+</code></pre></div><h2 id='5-declarations'>5 Declarations</h2>
+<p>Declarations are a way to neatly represent all of the various rules and functions comprising source code. Declarations are not statements, as declarations will not produce any side effects.</p>
+<h3 id='5-1-function-declarations'>5.1 Function Declarations</h3>
+<p>A function is declared using the syntax <code>Fun ( Identifier | output_identifier ) Lambda expression</code>. A function declaration always begins with the keyword <code>fun</code>. The next element can either be an Identifier token or an output_identifier phrase.</p></p>
 
-<h3 id='4-6-interval-operations'>4.6 Interval Operations</h3>
+<p>All function names must be unique. A function can be called in any expression context.</p>
 
-<p>An expression of the form <code>expression ( &#39;in&#39; | &#39;out&#39; ) expression</code> is an interval operation. The left-hand side expression must evaluate to either a number or an interval. The right-hand side expression must evaluate to an interval. The <code>in</code> keyword</p>
-
-<h3 id='4-7-function-expressions'>4.7 Function Expressions</h3>
-
-<p>An expression of the form <code>&#39;fun&#39; ( IDENTIFIER | DOMAIN ) &#39;=&gt;&#39; expression</code> is a function expression. A function expression is always preceded by the keyword <code>fun</code>. A function name can either be an identifier token or a domain keyword token. The identifier can be any alpha numeric character sequence if it starts with an alpha character. The domain is allowed to be any reserved domain keyword. </p>
-
-<p>All function names must be unique. Because a function is an expression it can be called where an expression is expected. This allows for reusable expressions.</p>
-
-<h4 id='4-7-1-example'>4.7.1 Example</h4><div class="highlight"><pre class="highlight plaintext"><code>fun LoanAmount =&gt;
+<h4 id='5-1-1-example'>5.1.1 Example</h4><div class="highlight"><pre class="highlight plaintext"><code>fun LoanAmount =&gt;
   table CreditScore
   | in (720, 850] =&gt; 75000
   | in (640, 720] =&gt; 40000
   | in (0, 640) =&gt; 28000
   _ =&gt; 0
-</code></pre></div><h2 id='5-declarations'>5 Declarations</h2>
-<p>Declarations are a way to neatly represent all of the various rules, functions, and top-level expressions comprising source code. Declarations are not exactly statements as declarations will not produce any side effects.</p>
-<h3 id='5-1-rule-declarations'>5.1 Rule Declarations</h3>
+</code></pre></div><h3 id='5-2-rule-declarations'>5.2 Rule Declarations</h3>
 <p>Rules are a special language construct and aren&#39;t classified as an expression. Rules allow for modifications to runtime values and provide an explicit loan denial system. There are two supported rule declarations, deny and adjust.</p>
-<h4 id='5-1-1-rule-deny'>5.1.1 Rule Deny</h4>
+<h4 id='5-2-1-rule-deny'>5.2.1 Rule Deny</h4>
 
-<p>A declaration of the form <code>&#39;rule&#39; &#39;deny&#39; STRING &#39;=&gt;&#39; expression</code> is a deny rule. The <code>STRING</code> token is human readable text to clearly express the rule and will be used as the display text to the end user. The right-hand side expression is required to evaluate to either true or false.</p>
+<p>A declaration of the form <code>Rule Deny String Lambda expression</code> is a deny rule. The <code>String</code> token is human readable text to clearly express the rule and will be used as the display text to the end user. The right-hand side expression is required to evaluate to either true or false.</p>
 
-<p><h5 id='5-1-1-1-example'>5.1.1.1 Example</h5><div class="highlight"><pre class="highlight plaintext"><code>rule deny &quot;Reject this loan if credit score is negative!&quot; =&gt;
+<p><h5 id='5-2-1-1-example'>5.2.1.1 Example</h5><div class="highlight"><pre class="highlight plaintext"><code>rule deny &quot;Reject this loan if credit score is negative!&quot; =&gt;
   CreditScore &lt; 0
-</code></pre></div><h4 id='5-1-2-rule-adjust'>5.1.2 Rule Adjust</h4>
-<p>A declaration of the form <code>&#39;rule&#39; &#39;adjust&#39; DOMAIN STRING &#39;=&gt;&#39; expression</code> is an adjust rule. We&#39;ve introduced a new token to the rule, <code>DOMAIN</code>. The <code>DOMAIN</code> is the domain property which can be adjusted. The expected return type of the expression is a number. The adjustment will be an arithmetic add operation, so if the adjustment should be a subtraction provide a negative number.</p>
-<h5 id='5-1-2-1-example'>5.1.2.1 Example</h5><div class="highlight"><pre class="highlight plaintext"><code>rule adjust InterestRate &quot;Loans exceeding 100 months should be raised half a point.&quot; =&gt;
+</code></pre></div><h4 id='5-2-2-rule-adjust'>5.2.2 Rule Adjust</h4>
+<p>A declaration of the form <code>Rule Adjust AdjustableIdentifier String Lambda expression</code> is an adjust rule, where <code>adjustable_identifier</code> is the input function to be adjusted. The required return type of the expression is a number. The adjustment is performed using addition, so if the adjustment is negative, provide a negative number.</p>
+<h5 id='5-2-2-1-example'>5.2.2.1 Example</h5><div class="highlight"><pre class="highlight plaintext"><code>rule adjust InterestRateAdjustment &quot;Loans exceeding 100 months should be raised half a point.&quot; =&gt;
   LoanTerm &gt; 100 
     ? .5
     : 0
@@ -5315,13 +5353,21 @@ table CreditScore, VehicleAge
 
 <p>There are a couple of language constructs which have types associated to them.
 * Functions: All functions have a return type associated. In Banking Meta Language functions are always parameterless so there&#39;s no need to worry about function arguments during calls.
-* Expressions: All expressions have some type based on the evaluation of it. Because most everything is an expression everything has a type associated to it.</p>
+* Expressions: All expressions evaluate to a single type. So every expression has an associated type.</p>
 
 <p>The language grammar and parser do a pretty good job defining the language rules and enforcing the language rules respectively. However there are several rules which require a semantic analysis pass. A note on scoping, Banking Meta Language only has a global scope.</p>
 
 <h3 id='6-1-coercion'>6.1 Coercion</h3>
 
-<p>Banking Meta Language supports coercion in the direction of an <code>integer</code> to a <code>floating point</code> and will do so when determining compatible types, e.g., either doing a comparison or determining the return type of a conditional expression.</p>
+<ul>
+<li>Banking Meta Language supports coercion in the direction of an <code>integer</code> to a <code>floating point</code> and will do so when determining compatible types, e.g., either doing a comparison or determining the return type of a conditional expression.</li>
+<li>BML also supports coercion in the direction of <code>integer</code> to <code>progression</code> and <code>interval</code> to <code>progression</code>.
+
+<ul>
+<li>When an <code>integer</code> is coerced to a <code>progression</code>, the <code>progression</code> becomes <code>%1 [N, N+1)</code> where <code>N</code> is the coerced <code>integer</code>. This effectively represents a single item equal to the <code>integer</code>.</li>
+<li>When an <code>interval</code> is coerced to a <code>progression</code> the <code>progression</code> becomes <code>%1, interval</code>. The coercion is only valid if the opening delimeter of the interval is &#39;[&#39;, and expressions in the interval are <code>integer</code>s.</li>
+</ul></li>
+</ul>
 
 <h3 id='6-2-functions-semantic-rules'>6.2 Functions Semantic Rules</h3>
 
@@ -5335,12 +5381,13 @@ table CreditScore, VehicleAge
 <li>Rules have a required <code>string</code> token which must be unique between rules.</li>
 <li>Deny rules must have a return type of <code>bool</code>.</li>
 <li>Adjust rules must have a return type of either <code>integer</code> or <code>floating point</code>.</li>
+<li>Adjust rules are guaranteed by the language runtime to be executed before any other rules or functions. Thus any reference to an <code>adjustable_identifier</code> in a deny rule or in a function will evaluate to the <em>adjusted</em> value.</li>
 </ul>
 
 <h3 id='6-4-interval-operation-expression-semantic-rules'>6.4 Interval Operation Expression Semantic Rules</h3>
 
 <ul>
-<li>An interval operation has two operands, the left-hand side can either be a <code>integer</code>, <code>floating point</code> or an <code>interval</code> and the right-hand side must be an <code>interval</code> type. The interval operation resulting type is always a <code>bool</code>.</li>
+<li>An interval operation has two operands, the left-hand side can either be an <code>integer</code>, <code>floating point</code> or an <code>interval</code> and the right-hand side must be an <code>interval</code>. The resulting type from an interval operation is always <code>bool</code>.</li>
 </ul>
 
 <h3 id='6-5-ternary-expression-semantic-rules'>6.5 Ternary Expression Semantic Rules</h3>
@@ -5400,107 +5447,379 @@ table CreditScore, VehicleAge
 table Grade | &gt;= 90 =&gt; &quot;A&quot; | &gt;= 80 =&gt; &quot;B&quot; ...
 </code></li>
 </ul></li>
-<li>A table has a single return <code>type</code>, and because of this all branch expressions must have compatible types. Like earlier in the event the types differ but type coercion is possible the resulting type is the coerced to type.</li>
+<li>A table has a single return type, and because of this all branch expressions must have compatible types. In the event the types differ but type coercion is possible, the resulting type is the coerced to type.</li>
 </ul>
 
 <h3 id='6-13-interval-expression-semantic-rules'>6.13 Interval Expression Semantic Rules</h3>
 
-<p>Please refer to the interval expression section for a breakdown of semantic rules.</p>
+<p>Let the two sub-expressions in an interval be referred to as <em>X1</em> and <em>X2</em>. Let us call these the <em>endpoints</em> of the interval. In order to be valid, an interval expression must satisfy <em>X1 &lt; X2</em>. Thus the empty interval is not valid. The opening and closing characters indicate if an interval&#39;s endpoint is included or excluded, as in Mathematics. If <em>n</em> is any <code>integer</code>, then the following table defines if <em>n</em> is included in an interval.</p>
 
-<h2 id='7-syntactic-grammar-ebnf'>7 Syntactic Grammar (EBNF)</h2><div class="highlight"><pre class="highlight plaintext"><code>program   ::= declaration+ EOF
-declaration 
-          ::= function 
-            | rule 
-            | expression
+<table><thead>
+<tr>
+<th>Expression</th>
+<th>Meaning</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><em>[ X1,</em></td>
+<td><em>n &gt;= X1</em></td>
+</tr>
+<tr>
+<td><em>( X1,</em></td>
+<td><em>n &gt; X1</em></td>
+</tr>
+<tr>
+<td><em>, X2 ]</em></td>
+<td><em>n &lt;= X2</em></td>
+</tr>
+<tr>
+<td><em>, X2 )</em></td>
+<td><em>n &lt; X2</em></td>
+</tr>
+</tbody></table>
 
-/*
-    Declarations
-*/
-function  ::= 'fun' ( IDENTIFIER | DOMAIN ) '=&gt;' expression
-rule      ::= 'rule' ( deny | adjust )
-deny      ::= 'deny' STRING '=&gt;' expression
-adjust    ::= 'adjust' rule_chain
-rule_chain 
-          ::= DOMAIN STRING '=&gt;' expression
+<h3 id='6-14-progression-expression-semantic-rules'>6.14 Progression Expression Semantic Rules</h3>
 
-/*
-    Expressions
-*/
-expression
-         ::= ternary
-           | function
-           | table
-ternary  ::= interval_op ( '?' interval_op ':' interval_op )?
-interval_op
-         ::= or ( ('in' | 'out' ) or )?
-or       ::= and ( 'or' and )*
-and      ::= equality ( 'and' equality )*
-equality ::= comparison ( ( '!=' | '==' ) comparison )*
-comparison 
-         ::= term ( ( '&gt;' | '&gt;=' | '&lt;' | '&lt;=' ) term )*
-term     ::= factor ( ( '-' | '+' ) factor )*
-factor   ::= unary ( ( '/' | '*' ) unary )*
-unary    ::= ( '!' | '-' | '&gt;' | '&gt;=' | '&lt;' | '&lt;=' | '!=' | '==' | 'in' | 'out' ) unary | primary
-primary  ::= NUMBER
-           | STRING
-           | DOMAIN
-           | IDENTIFIER
-           | BOOLEAN
-           | interval
-           | '{' expression '}'
-table    ::= 'table' tuple ( pipe '=&gt;' expression )+ ( '_' '=&gt;' expression )?
-/* Not a pure expression, we don't allow nested tuples */
-tuple    ::= expression ( ',' expression )*
-/* Not a pure expression, pipes are components of tables */
-pipe     ::= '|' tuple
+<ul>
+<li>A progression starts with a percent character, <code>%</code>, followed be an expression which must be of type <code>integer</code>. BML does not support <code>floating point</code> common differences. A progression then expects an <code>interval</code>. The <code>interval</code> must start with an inclusive bound and each <em>endpoint</em> of the interval must be an <code>integer</code>.</li>
+<li>A progression when expanded requires that there is at least one item, and the expansion does not exceed 1000 items.</li>
+</ul>
 
-/*
-    Lexical Grammar
-    For unicode character classes https://www.compart.com/en/unicode/category
-*/
-interval ::= ( '[' | '(' ) expression ',' expression ( ']' | ')' )
-BOOLEAN  ::= 'true'
-           | 'false'
-NUMBER   ::= DIGIT+ ( '.' DIGIT+)?
-STRING   ::= '"' '&lt;any character except "&gt;'* '"'
-IDENTIFIER 
-         ::= ALPHA ( ALPHA | DIGIT )*
-ALPHA    ::= '&lt;A Unicode character of classes Lu, Ll, Lt, Lm, Lo, or Nl&gt;'
-DIGIT    ::= '0'
-           | '1'
-           | '2'
-           | '3'
-           | '4'
-           | '5'
-           | '6'
-           | '7'
-           | '8'
-           | '9'
-DOMAIN   ::= 'CreditScore'
-           | 'LoanAmount'
-           | 'LoanTerm'
-           | 'InterestRate'
-           | 'LoanToValuePercent'
-           | 'DebtToIncomePercent'
-           | 'UnsecuredDebtToIncomePercent'
-           | 'PaymentToIncomePercent'
-           | 'MinimumMonthlyPayment'
-           | 'Mileage'
-           | 'VehicleAge'
-           | 'WatercraftLength'
-           | 'PromotionalInterestRate'
-           | 'PromotionalDuration'
-           | 'PrimeRateModifies'
-           | 'PrimeRateType'
-           | 'DrawPeriodInMonths'
-           | 'MaxLienPosition'
-           | 'LiabilityCount'
-           | 'OldestLiabilityInMonths'
-           | 'GrossMonthlyIncome'
-           | 'GrossMonthlyIncomeRatio'
-           | 'TotalUnsecuredDebt'
-           | 'TotalUnsecuredDebtInstitutionSpecific'
-</code></pre></div><h2 id='8-resources'>8 Resources</h2>
+<h3 id='6-15-domain-identifier-types'>6.15 Domain Identifier Types</h3>
+
+<p>The types of all <code>domain_identifier</code> functions are given in the following table</p>
+
+<table><thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Category</th>
+<th>Default Value</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>LoanAmount</td>
+<td><code>floating point</code></td>
+<td>input, adjustable</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td>LoanTerm</td>
+<td><code>integer</code></td>
+<td>input, adjustable</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td>CreditScore</td>
+<td><code>integer</code></td>
+<td>input, non-adjustable</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td>LoanToValuePercent</td>
+<td><code>floating point</code></td>
+<td>input, non-adjustable</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td>DebtToIncomePercent</td>
+<td><code>floating point</code></td>
+<td>input, non-adjustable</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td>UnsecuredDebtToIncomePercent</td>
+<td><code>floating point</code></td>
+<td>input, non-adjustable</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td>PaymentToIncomePercent</td>
+<td><code>floating point</code></td>
+<td>input, non-adjustable</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td>Mileage</td>
+<td><code>integer</code></td>
+<td>input, non-adjustable</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td>VehicleAge</td>
+<td><code>integer</code></td>
+<td>input, non-adjustable</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td>WatercraftLength</td>
+<td><code>integer</code></td>
+<td>input, non-adjustable</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td>LiabilityCount</td>
+<td><code>integer</code></td>
+<td>input, non-adjustable</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td>OldestLiabilityInMonths</td>
+<td><code>integer</code></td>
+<td>input, non-adjustable</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td>GrossMonthlyIncome</td>
+<td><code>floating point</code></td>
+<td>input, non-adjustable</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td>GrossMonthlyIncomeRatio</td>
+<td><code>floating point</code></td>
+<td>input, non-adjustable</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td>TotalUnsecuredDebt</td>
+<td><code>floating point</code></td>
+<td>input, non-adjustable</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td>TotalUnsecuredDebtInstitutionSpecific</td>
+<td><code>floating point</code></td>
+<td>input, non-adjustable</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td>InterestRate</td>
+<td><code>floating point</code></td>
+<td>output, required</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td>InterestRateAdjustment</td>
+<td><code>floating point</code></td>
+<td>output, optional</td>
+<td>0</td>
+</tr>
+<tr>
+<td>AllowableLoanTerms</td>
+<td><code>progression</code></td>
+<td>output, optional</td>
+<td>%1 [0, 1)</td>
+</tr>
+<tr>
+<td>MaxLoanAmount</td>
+<td><code>floating point</code></td>
+<td>output, optional</td>
+<td>0</td>
+</tr>
+<tr>
+<td>MaxLoanToValuePercent</td>
+<td><code>floating point</code></td>
+<td>output, optional</td>
+<td>0</td>
+</tr>
+<tr>
+<td>MaxDebtToIncomePercent</td>
+<td><code>floating point</code></td>
+<td>output, optional</td>
+<td>0</td>
+</tr>
+<tr>
+<td>MaxPaymentToIncomePercent</td>
+<td><code>floating point</code></td>
+<td>output, optional</td>
+<td>0</td>
+</tr>
+<tr>
+<td>CompoundingPeriodsPerYear</td>
+<td><code>integer</code></td>
+<td>output, optional</td>
+<td>12</td>
+</tr>
+<tr>
+<td>MinimumMonthlyPayment</td>
+<td><code>floating point</code></td>
+<td>output, optional</td>
+<td>0</td>
+</tr>
+<tr>
+<td>PromotionalInterestRate</td>
+<td><code>floating point</code></td>
+<td>output, optional</td>
+<td>0</td>
+</tr>
+<tr>
+<td>PromotionalDuration</td>
+<td><code>integer</code></td>
+<td>output, optional</td>
+<td>0</td>
+</tr>
+<tr>
+<td>PrimeRateModifies</td>
+<td><code>boolean</code></td>
+<td>output, optional</td>
+<td>false</td>
+</tr>
+<tr>
+<td>PrimeRateType</td>
+<td><code>string</code></td>
+<td>output, optional</td>
+<td>&quot;Fed&quot;</td>
+</tr>
+<tr>
+<td>DrawPeriodsInMonths</td>
+<td><code>integer</code></td>
+<td>output, optional</td>
+<td>0</td>
+</tr>
+<tr>
+<td>MaxLienPosition</td>
+<td><code>integer</code></td>
+<td>output, optional</td>
+<td>2</td>
+</tr>
+</tbody></table>
+
+<p>The meaning of each of the domain_identifiers is given in the following table.</p>
+
+<table><thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>LoanAmount</td>
+<td>The amount of the loan.</td>
+</tr>
+<tr>
+<td>LoanTerm</td>
+<td>The total number of payments over the life of the loan, if it is structured.</td>
+</tr>
+<tr>
+<td>CreditScore</td>
+<td>A credit score for the borrower. The specific credit score product, or combination thereof (e.g. Tri Merge), is outside the scope of this specification.</td>
+</tr>
+<tr>
+<td>LoanToValuePercent</td>
+<td>The ratio of the loan value to asset appraisal value, expressed as a percentage.</td>
+</tr>
+<tr>
+<td>DebtToIncomePercent</td>
+<td>The ratio the borrowers total monthly payments towards debt and their monthly income, expressed as a percentage.</td>
+</tr>
+<tr>
+<td>UnsecuredDebtToIncomePercent</td>
+<td>The ratio of the borrowers monthly payment towards unsecured debt and their their monthly income, expressed as a percentage.</td>
+</tr>
+<tr>
+<td>PaymentToIncomePercent</td>
+<td>The ratio of the payment towards this loan and the borrowers monthly income, expressed as a percentage.</td>
+</tr>
+<tr>
+<td>Mileage</td>
+<td>The mileage of the vehicle that this loan is secured by.</td>
+</tr>
+<tr>
+<td>VehicleAge</td>
+<td>The age of the vehicle, measured in years, that this loan is secured by. Note that only full years are counted, so if a vehicle is 14 months old, it would be considered 1 year old.</td>
+</tr>
+<tr>
+<td>WatercraftLength</td>
+<td>The length of the watercraft that this loan is secured by. If this loan is not a watercraft loan then this function returns 0.</td>
+</tr>
+<tr>
+<td>LiabilityCount</td>
+<td>The total number of liabilities that a borrower has.</td>
+</tr>
+<tr>
+<td>OldestLiabilityInMonths</td>
+<td>The number of months that the oldest liability has been open.</td>
+</tr>
+<tr>
+<td>GrossMonthlyIncome</td>
+<td>The total gross monthly income of the borrower.</td>
+</tr>
+<tr>
+<td>GrossMonthlyIncomeRatio</td>
+<td>The ratio of this loan&#39;s amount to gross monthly income.</td>
+</tr>
+<tr>
+<td>TotalUnsecuredDebt</td>
+<td>The value of a borrowers unsecured debt.</td>
+</tr>
+<tr>
+<td>TotalUnsecuredDebtInstitutionSpecific</td>
+<td>The total value of a borrowers unsecured debt that is held by the current financial institution.</td>
+</tr>
+<tr>
+<td>InterestRate</td>
+<td>The interest rate of this loan, stated as nominal interest per year.</td>
+</tr>
+<tr>
+<td>InterestRateAdjustment</td>
+<td>Provides a hook to the adjustment rules to adjust the interest rate.</td>
+</tr>
+<tr>
+<td>AllowableLoanTerms</td>
+<td>The allowable loan terms for a product.</td>
+</tr>
+<tr>
+<td>MaxLoanAmount</td>
+<td>The maximum allowed value for a loan.</td>
+</tr>
+<tr>
+<td>MaxLoanToValuePercent</td>
+<td>The maximum allowed value for the loan to value percentage.</td>
+</tr>
+<tr>
+<td>MaxDebtToIncomePercent</td>
+<td>The maximum allowed value for the debt to income percentage.</td>
+</tr>
+<tr>
+<td>MaxPaymentToIncomePercent</td>
+<td>The maximum allowed value for the payment to income percentage.</td>
+</tr>
+<tr>
+<td>CompoundingPeriodsPerYear</td>
+<td>The number of compounding periods for this loan in one year.</td>
+</tr>
+<tr>
+<td>MinimumMonthlyPayment</td>
+<td>The minimum amount that can be paid on an unstructured loan.</td>
+</tr>
+<tr>
+<td>PromotionalInterestRate</td>
+<td>The promotional interest rate on this loan, expressed as nominal interest per year.</td>
+</tr>
+<tr>
+<td>PromotionalDuration</td>
+<td>The number of payment periods which are subject to the PromotionalInterestRate.</td>
+</tr>
+<tr>
+<td>PrimeRateModifies</td>
+<td>If true then the current <em>prime rate</em> will be added to InterestRate to determine the final interest rate of the loan.</td>
+</tr>
+<tr>
+<td>PrimeRateType</td>
+<td>The type of <em>prime rate</em> to use when modifying the InterestRate. Currently, only &quot;Fed&quot; is supported, which refers to the Federal Reserve Bank prime loan rate.</td>
+</tr>
+<tr>
+<td>DrawPeriodsInMonths</td>
+<td>If this loan is a HELOC, then this is the number of months in its draw period.</td>
+</tr>
+<tr>
+<td>MaxLienPosition</td>
+<td>The highest lien position that this loan can occupy, if it is secured by a home.</td>
+</tr>
+</tbody></table>
+
+<h2 id='7-resources'>7 Resources</h2>
 
 <p>Google Scholar aptly summarizes the development approach to the Banking Meta Language, &quot;Stand on the shoulders of giants&quot;. Resources made use of in no particular order.</p>
 
